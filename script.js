@@ -63,13 +63,13 @@ document.addEventListener('DOMContentLoaded', () => {
             fastCycleCount++;
         }, 50);
 
-        await sleep(2000);
+        await sleep(1000); // Faster fast cycle
         clearInterval(fastInterval);
 
         // Slow cycle
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 3; i++) { // Fewer slow steps
             element.textContent = getRandomElement(optionList);
-            await sleep(200 + i * 50);
+            await sleep(150 + i * 50); // Faster slow cycle
         }
         
         element.textContent = finalResult;

@@ -7,7 +7,7 @@ body {
     align-items: flex-start;
     min-height: 100vh;
     margin: 0;
-    padding: 5vh 10px;
+    padding: 2vh 10px; /* Reduced vertical padding */
     box-sizing: border-box;
 }
 
@@ -22,13 +22,12 @@ body {
 }
 
 h1 {
-    color: #ff6600;
-    text-transform: uppercase;
+    color: #ff6600; /* Reverted color */
     letter-spacing: 2px;
 }
 
 .squad-selection button {
-    background-color: #ff6600;
+    background-color: #ff6600; /* Reverted color */
     color: #ffffff;
     border: none;
     padding: 10px 20px;
@@ -36,15 +35,14 @@ h1 {
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    text-transform: uppercase;
 }
 
 .squad-selection button.selected {
-    background-color: #cc5200;
+    background-color: #cc5200; /* Reverted darker shade */
 }
 
 #roll {
-    background-color: #ff6600;
+    background-color: #ff6600; /* Reverted color */
     color: #ffffff;
     border: none;
     padding: 15px 30px;
@@ -52,7 +50,6 @@ h1 {
     border-radius: 5px;
     cursor: pointer;
     font-size: 20px;
-    text-transform: uppercase;
 }
 
 .results {
@@ -69,11 +66,11 @@ h1 {
 }
 
 h2 {
-    color: #ff6600;
+    color: #ff6600; /* Reverted color */
     margin-top: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin-bottom: 10px;
+    position: relative;
+    display: inline-block;
 }
 
 p {
@@ -87,13 +84,17 @@ p {
     cursor: pointer;
     font-size: 20px;
     padding: 0;
-    margin-left: 10px;
     transition: transform 0.2s ease-in-out;
     font-family: sans-serif; /* Fallback for emoji */
+    position: absolute;
+    left: 100%;
+    margin-left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .reroll-btn:hover {
-    transform: scale(1.2) rotate(15deg);
+    transform: translateY(-50%) scale(1.2) rotate(15deg);
 }
 
 @media (max-width: 600px) {
