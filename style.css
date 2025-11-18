@@ -112,4 +112,23 @@ p {
     .results {
         grid-template-columns: 1fr;
     }
+    
+    /* --- Add these rules to reduce top spacing --- */
+    
+    body {
+        /* Reduce the overall vertical space at the top/bottom of the page */
+        padding-top: 10px; /* Change from the original 2vh */
+        padding-bottom: 10px; /* Ensure bottom padding is also small if needed */
+        /* Keep original side padding: 10px */
+    }
+    
+    .container {
+        /* Reduce the internal padding at the top of the dark container box */
+        padding-top: 10px; /* Change from the original 20px */
+    }
+    
+    .container h1 {
+        /* Remove the browser's default margin space above the heading */
+        margin-top: 0;
+    }
 }
