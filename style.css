@@ -1,0 +1,83 @@
+body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-family: 'Orbitron', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    background-color: #2a2a2a;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    width: 90%;
+    max-width: 500px;
+}
+
+h1 {
+    color: #ff6600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.squad-selection button {
+    background-color: #ff6600;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+
+.squad-selection button.selected {
+    background-color: #cc5200;
+}
+
+#roll {
+    background-color: #ff6600;
+    color: #ffffff;
+    border: none;
+    padding: 15px 30px;
+    margin-top: 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    text-transform: uppercase;
+}
+
+.results {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.result-category {
+    background-color: #3a3a3a;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+h2 {
+    color: #ff6600;
+    margin-top: 0;
+}
+
+p {
+    font-size: 18px;
+    min-height: 25px;
+}
+
+@media (max-width: 600px) {
+    .results {
+        grid-template-columns: 1fr;
+    }
+}
