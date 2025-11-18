@@ -108,7 +108,7 @@ p {
     transform: scale(1.2) rotate(15deg);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 800px) {
     .results {
         grid-template-columns: 1fr;
     }
