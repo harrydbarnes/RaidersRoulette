@@ -4,9 +4,11 @@ body {
     font-family: 'Orbitron', sans-serif;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     min-height: 100vh;
     margin: 0;
+    padding: 5vh 10px;
+    box-sizing: border-box;
 }
 
 .container {
@@ -69,11 +71,29 @@ h1 {
 h2 {
     color: #ff6600;
     margin-top: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 p {
     font-size: 18px;
     min-height: 25px;
+}
+
+.reroll-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0;
+    margin-left: 10px;
+    transition: transform 0.2s ease-in-out;
+    font-family: sans-serif; /* Fallback for emoji */
+}
+
+.reroll-btn:hover {
+    transform: scale(1.2) rotate(15deg);
 }
 
 @media (max-width: 600px) {
