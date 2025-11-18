@@ -38,7 +38,7 @@ h1 {
 }
 
 .squad-selection button.selected {
-    background-color: #cc5200; /* Reverted darker shade */
+    background-color: #f1aa1c; /* Reverted darker shade */
 }
 
 #roll {
