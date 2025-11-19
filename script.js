@@ -53,6 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function animateResult(element, category) {
+        const rerollBtn = document.querySelector(`.reroll-btn[data-category="${category}"]`);
+        if (rerollBtn) {
+            rerollBtn.classList.add('rolling');
+        }
+
         const optionList = getOptionsForCategory(category);
         const finalResult = getRandomElement(optionList);
         let fastCycleCount = 0;
@@ -73,6 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         element.textContent = finalResult;
+
+        if (rerollBtn) {
+            rerollBtn.classList.remove('rolling');
+        }
     }
 
     async function rollAll() {
