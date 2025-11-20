@@ -124,19 +124,14 @@ document.addEventListener('DOMContentLoaded', () => {
              return;
         }
 
-        let lootText = `for a ${loot}`;
-        if (loot === 'No Loot') {
-            lootText = 'for No Loot';
-        }
+        const lootText = loot === 'No Loot' ? 'for No Loot' : `for a ${loot}`;
 
-        let styleText = `we will ${style}`;
-        if (style === 'Lone Wolf') {
-            styleText = 'we will go Lone Wolf';
-        } else if (style === 'Lone Wolves') {
-            styleText = 'we will be Lone Wolves';
-        } else if (style === 'Decepticon') {
-            styleText = 'we will play Decepticon';
-        }
+        const styleTextPhrases = {
+            'Lone Wolf': 'we will go Lone Wolf',
+            'Lone Wolves': 'we will be Lone Wolves',
+            'Decepticon': 'we will play Decepticon',
+        };
+        const styleText = styleTextPhrases[style] || `we will ${style}`;
 
         const textToCopy = `Hey, Raider - want to team up? We are heading to ${map}, ${lootText} and ${styleText}. Code word for this run is ${codeWord}.`;
 
@@ -148,6 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 2000);
         }).catch(err => {
             console.error('Failed to copy: ', err);
+            const originalText = copyButton.textContent;
+            copyButton.textContent = '❌';
+            setTimeout(() => {
+                copyButton.textContent = originalText;
+            }, 2000);
         });
     });
 
