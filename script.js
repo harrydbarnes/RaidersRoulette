@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const style = resultElements.style.textContent;
         const codeWord = resultElements.codeWord.textContent;
 
-        if (map === '🎲' || loot === '🎲' || style === '🎲' || codeWord === '🎲') {
+        if ([map, loot, style, codeWord].some(result => result === '🎲')) {
             // Don't copy if not all results are available
              return;
         }
