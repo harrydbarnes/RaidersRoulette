@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const trioButton = document.getElementById('trio');
     const rollButton = document.getElementById('roll');
     const rerollButtons = document.querySelectorAll('.reroll-btn');
+    const copyButton = document.getElementById('copy-btn');
 
     const resultElements = {
         map: document.getElementById('map-result'),
@@ -53,6 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function animateResult(element, category) {
+        const rerollBtn = document.querySelector(`.reroll-btn[data-category="${category}"]`);
+        if (rerollBtn) {
+            rerollBtn.classList.add('rolling');
+        }
+
         const optionList = getOptionsForCategory(category);
         const finalResult = getRandomElement(optionList);
         let fastCycleCount = 0;
@@ -73,6 +79,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         element.textContent = finalResult;
+
+        if (rerollBtn) {
+            rerollBtn.classList.remove('rolling');
+        }
     }
 
     async function rollAll() {
@@ -100,6 +110,44 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = button.dataset.category;
             const element = resultElements[category];
             await animateResult(element, category);
+        });
+    });
+
+    copyButton.addEventListener('click', () => {
+        const map = resultElements.map.textContent;
+        const loot = resultElements.loot.textContent;
+        const style = resultElements.style.textContent;
+        const codeWord = resultElements.codeWord.textContent;
+
+        if ([map, loot, style, codeWord].some(result => result === '🎲')) {
+            // Don't copy if not all results are available
+             return;
+        }
+
+        let lootText = `for a ${loot}`;
+        if (loot === 'No Loot') {
+            lootText = 'for No Loot';
+        }
+
+        let styleText = `we will ${style}`;
+        if (style === 'Lone Wolf') {
+            styleText = 'we will go Lone Wolf';
+        } else if (style === 'Lone Wolves') {
+            styleText = 'we will be Lone Wolves';
+        } else if (style === 'Decepticon') {
+            styleText = 'we will play Decepticon';
+        }
+
+        const textToCopy = `Hey, Raider - want to team up? We are heading to ${map}, ${lootText} and ${styleText}. Code word for this run is ${codeWord}.`;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalText = copyButton.textContent;
+            copyButton.textContent = '✅';
+            setTimeout(() => {
+                copyButton.textContent = originalText;
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
         });
     });
 
