@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         copyButton.textContent = icon;
         copyFeedbackTimeout = setTimeout(() => {
             copyButton.textContent = originalCopyIcon;
-        }, 2000);
+        }, COPY_FEEDBACK_DURATION_MS);
     }
 
     const options = {
