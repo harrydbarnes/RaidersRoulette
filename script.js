@@ -15,6 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let squadSize = 'solo'; // Default squad size
     let isRolling = false;
+    let copyFeedbackTimeout;
+    const originalCopyIcon = copyButton.textContent;
+
+    function showCopyFeedback(icon) {
+        clearTimeout(copyFeedbackTimeout);
+        copyButton.textContent = icon;
+        copyFeedbackTimeout = setTimeout(() => {
+            copyButton.textContent = originalCopyIcon;
+        }, COPY_FEEDBACK_DURATION_MS);
+    }
 
     const options = {
         map: ['Dam Battlegrounds', 'Buried City', 'Spaceport', 'The Blue Gate', 'Stella Montis'],
@@ -25,6 +35,12 @@ document.addEventListener('DOMContentLoaded', () => {
             trio: ['Lone Wolves', 'Buddy Up', 'Decepticon', 'Kill on Sight']
         },
         codeWord: ['Spicy Meatball', 'Flapjack', 'Penguin', 'Pepperoni', 'Glitter', 'Banana Protocol', 'Check the Fridge', 'The Wrong Trousers', 'My Guy', 'Left', 'Right', 'Dead Ahead', 'Look Up', 'Look Down']
+    };
+
+    const styleTextPhrases = {
+        'Lone Wolf': 'we will go Lone Wolf',
+        'Lone Wolves': 'we will be Lone Wolves',
+        'Decepticon': 'we will play Decepticon',
     };
 
     // Set initial dice emoji
@@ -124,30 +140,17 @@ document.addEventListener('DOMContentLoaded', () => {
              return;
         }
 
-        let lootText = `for a ${loot}`;
-        if (loot === 'No Loot') {
-            lootText = 'for No Loot';
-        }
+        const lootText = loot === 'No Loot' ? 'for No Loot' : `for a ${loot}`;
 
-        let styleText = `we will ${style}`;
-        if (style === 'Lone Wolf') {
-            styleText = 'we will go Lone Wolf';
-        } else if (style === 'Lone Wolves') {
-            styleText = 'we will be Lone Wolves';
-        } else if (style === 'Decepticon') {
-            styleText = 'we will play Decepticon';
-        }
+        const styleText = styleTextPhrases[style] || `we will ${style}`;
 
         const textToCopy = `Hey, Raider - want to team up? We are heading to ${map}, ${lootText} and ${styleText}. Code word for this run is ${codeWord}.`;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
-            const originalText = copyButton.textContent;
-            copyButton.textContent = '✅';
-            setTimeout(() => {
-                copyButton.textContent = originalText;
-            }, 2000);
+            showCopyFeedback('✅');
         }).catch(err => {
             console.error('Failed to copy: ', err);
+            showCopyFeedback('❌');
         });
     });
 
