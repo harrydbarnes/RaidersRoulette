@@ -21,7 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let copyFeedbackTimeout;
     const originalCopyIcon = copyIcon.textContent;
     const originalCopyText = copyText.textContent;
+
+    // Constants
     const COPY_FEEDBACK_DURATION_MS = 2000;
+    const TTS_TEXT = "Hey Raider, want to team up?";
+    const TTS_PITCH = 1.1;
+    const TTS_RATE = 1.1;
 
     // TTS Setup
     let voices = [];
@@ -31,9 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (window.speechSynthesis) {
         loadVoices();
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = loadVoices;
-        }
+        // Use addEventListener for better compatibility and clean code
+        window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
     }
 
     function speakIntro() {
@@ -42,8 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cancel any currently playing speech to avoid overlap
         window.speechSynthesis.cancel();
 
-        const text = "Hey Raider, want to team up?";
-        const utterance = new SpeechSynthesisUtterance(text);
+        const utterance = new SpeechSynthesisUtterance(TTS_TEXT);
 
         // Attempt to find an enthusiastic American male voice
         // Note: 'en-US' is standard. Gender detection is tricky across browsers/OS.
@@ -57,8 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Adjust pitch and rate to sound more "enthusiastic"
-        utterance.pitch = 1.1;
-        utterance.rate = 1.1;
+        utterance.pitch = TTS_PITCH;
+        utterance.rate = TTS_RATE;
 
         window.speechSynthesis.speak(utterance);
     }
