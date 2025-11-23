@@ -65,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showCopyToast() {
         copyButton.classList.remove('hidden');
-        speakIntro();
     }
 
     function showCopyFeedback(success) {
@@ -168,6 +167,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide toast while rolling new set
         copyButton.classList.add('hidden');
 
+        // Speak when dice start rolling
+        speakIntro();
+
         await animateResult(resultElements.map, 'map');
         await animateResult(resultElements.loot, 'loot');
         await animateResult(resultElements.style, 'style');
@@ -191,6 +193,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Hide toast to prevent copying unstable state
             copyButton.classList.add('hidden');
+
+            // Speak when reroll starts
+            speakIntro();
 
             const category = button.dataset.category;
             const element = resultElements[category];
