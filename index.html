@@ -16,7 +16,7 @@
 </head>
 <body>
     <div class="container">
-        <button id="copy-btn" title="Copy to clipboard" aria-label="Copy to clipboard">📋</button>
+        <!-- Copy button moved to bottom right toast -->
         <h1>Arc Raiders Roulette</h1>
         <div class="squad-selection">
             <button id="solo">Solo</button>
@@ -43,6 +43,12 @@
             </div>
         </div>
     </div>
+
+    <button id="copy-toast" class="toast hidden" aria-label="Copy to clipboard">
+        <span class="icon">📋</span>
+        <span class="text">Copy Loadout</span>
+    </button>
+
     <script src="script.js"></script>
 </body>
 </html>
