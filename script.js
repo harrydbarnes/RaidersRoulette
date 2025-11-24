@@ -43,10 +43,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function speakIntro() {
         if (!window.speechSynthesis) return;
 
+        // Check if we have already played the intro this session
+        if (sessionStorage.getItem('hasPlayedIntro')) {
+            return;
+        }
+
         // Cancel any currently playing speech to avoid overlap
         window.speechSynthesis.cancel();
 
         const utterance = new SpeechSynthesisUtterance(TTS_TEXT);
+
+        // Mark as played
+        // We set it here so subsequent calls in this session will skip
+        sessionStorage.setItem('hasPlayedIntro', 'true');
 
         // Attempt to find an enthusiastic American male voice
         // Note: 'en-US' is standard. Gender detection is tricky across browsers/OS.
