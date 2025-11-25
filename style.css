@@ -7,7 +7,7 @@ body {
     align-items: flex-start;
     min-height: 100vh;
     margin: 0;
-    padding: 2vh 10px; /* Reduced vertical padding */
+    padding: 2vh 10px;
     box-sizing: border-box;
 }
 
@@ -22,35 +22,55 @@ body {
     position: relative;
 }
 
-#copy-btn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: none;
-    border: none;
-    color: #ffffff;
-    font-size: 24px;
+/* Toast Styles */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ff6600;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
     cursor: pointer;
-    padding: 5px;
-    transition: transform 0.2s;
-    z-index: 10;
+    border: none;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    z-index: 1000;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+    opacity: 1;
+    transform: translateY(0);
 }
 
-#copy-btn:hover {
-    transform: scale(1.1);
+.toast.hidden {
+    opacity: 0;
+    transform: translateY(100px);
+    pointer-events: none;
 }
 
-#copy-btn:active {
-    transform: scale(0.9);
+.toast:hover {
+    transform: translateY(-5px);
+    background-color: #f1aa1c;
+}
+
+.toast:active {
+    transform: scale(0.95);
+}
+
+.toast .icon {
+    font-size: 20px;
 }
 
 h1 {
-    color: #ff6600; /* Reverted color */
+    color: #ff6600;
     letter-spacing: 2px;
 }
 
 .squad-selection button {
-    background-color: #ff6600; /* Reverted color */
+    background-color: #ff6600;
     color: #ffffff;
     border: none;
     padding: 10px 20px;
@@ -61,11 +81,11 @@ h1 {
 }
 
 .squad-selection button.selected {
-    background-color: #f1aa1c; /* Reverted darker shade */
+    background-color: #f1aa1c;
 }
 
 #roll {
-    background-color: #ff6600; /* Reverted color */
+    background-color: #ff6600;
     color: #ffffff;
     border: none;
     padding: 10px 25px;
@@ -89,13 +109,9 @@ h1 {
 }
 
 h2 {
-    color: #ff6600; /* Reverted color */
+    color: #ff6600;
     margin-top: 0;
     margin-bottom: 10px;
-    /* REMOVE: position: relative; */
-    /* REMOVE: display: inline-block; */
-    
-    /* ADD: Use flexbox to center the text and button */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -114,20 +130,10 @@ p {
     padding: 0;
     transition: transform 0.2s ease-in-out;
     font-family: sans-serif; /* Fallback for emoji */
-    
-    /* REMOVE absolute positioning: */
-    /* position: absolute; */
-    /* left: 100%; */
-    /* margin-left: 10px; */
-    /* top: 50%; */
-    /* transform: translateY(-50%); */
-
-    /* ADD margin to separate the button from the text */
-    margin-left: 5px; /* Adjust this value as needed */
+    margin-left: 5px;
 }
 
 .reroll-btn:hover {
-    /* REMOVE the translateY part of the transform */
     transform: scale(1.2) rotate(15deg);
 }
 
@@ -136,22 +142,16 @@ p {
         grid-template-columns: 1fr;
     }
     
-    /* --- Add these rules to reduce top spacing --- */
-    
     body {
-        /* Reduce the overall vertical space at the top/bottom of the page */
-        padding-top: 15px; /* Change from the original 2vh */
-        padding-bottom: 10px; /* Ensure bottom padding is also small if needed */
-        /* Keep original side padding: 10px */
+        padding-top: 15px;
+        padding-bottom: 10px;
     }
     
     .container {
-        /* Reduce the internal padding at the top of the dark container box */
-        padding-top: 15px; /* Change from the original 20px */
+        padding-top: 15px;
     }
     
     .container h1 {
-        /* Remove the browser's default margin space above the heading */
         margin-top: 0;
     }
 }

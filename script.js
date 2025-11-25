@@ -4,7 +4,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const trioButton = document.getElementById('trio');
     const rollButton = document.getElementById('roll');
     const rerollButtons = document.querySelectorAll('.reroll-btn');
-    const copyButton = document.getElementById('copy-btn');
+    // Updated selector for the new toast element
+    const copyButton = document.getElementById('copy-toast');
+    const copyIcon = copyButton.querySelector('.icon');
+    const copyText = copyButton.querySelector('.text');
 
     const resultElements = {
         map: document.getElementById('map-result'),
@@ -16,13 +19,80 @@ document.addEventListener('DOMContentLoaded', () => {
     let squadSize = 'solo'; // Default squad size
     let isRolling = false;
     let copyFeedbackTimeout;
-    const originalCopyIcon = copyButton.textContent;
+    const originalCopyIcon = copyIcon.textContent;
+    const originalCopyText = copyText.textContent;
 
-    function showCopyFeedback(icon) {
+    // Constants
+    const COPY_FEEDBACK_DURATION_MS = 2000;
+    const TTS_TEXT = "Hey Raider, want to team up?";
+    const TTS_PITCH = 1.1;
+    const TTS_RATE = 1.1;
+
+    // TTS Setup
+    let voices = [];
+    function loadVoices() {
+        voices = window.speechSynthesis.getVoices();
+    }
+
+    if (window.speechSynthesis) {
+        loadVoices();
+        // Use addEventListener for better compatibility and clean code
+        window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    }
+
+    function speakIntro() {
+        if (!window.speechSynthesis) return;
+
+        // Check if we have already played the intro this session
+        if (sessionStorage.getItem('hasPlayedIntro')) {
+            return;
+        }
+
+        // Cancel any currently playing speech to avoid overlap
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(TTS_TEXT);
+
+        // Mark as played
+        // We set it here so subsequent calls in this session will skip
+        sessionStorage.setItem('hasPlayedIntro', 'true');
+
+        // Attempt to find an enthusiastic American male voice
+        // Note: 'en-US' is standard. Gender detection is tricky across browsers/OS.
+        // We look for common names or just prioritize en-US.
+        // Fallback to browser default if no 'en-US' voice is found (instead of voices[0] which might be wrong language)
+        const usVoices = voices.filter(v => v.lang === 'en-US');
+        const voice = usVoices.find(v => v.name.includes('Male') || v.name.includes('David') || v.name.includes('Google US English')) || usVoices[0];
+
+        if (voice) {
+            utterance.voice = voice;
+        }
+
+        // Adjust pitch and rate to sound more "enthusiastic"
+        utterance.pitch = TTS_PITCH;
+        utterance.rate = TTS_RATE;
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function showCopyToast() {
+        copyButton.classList.remove('hidden');
+    }
+
+    function showCopyFeedback(success) {
         clearTimeout(copyFeedbackTimeout);
-        copyButton.textContent = icon;
+
+        if (success) {
+            copyIcon.textContent = '✅';
+            copyText.textContent = 'Copied!';
+        } else {
+            copyIcon.textContent = '❌';
+            copyText.textContent = 'Error';
+        }
+
         copyFeedbackTimeout = setTimeout(() => {
-            copyButton.textContent = originalCopyIcon;
+            copyIcon.textContent = originalCopyIcon;
+            copyText.textContent = originalCopyText;
         }, COPY_FEEDBACK_DURATION_MS);
     }
 
@@ -106,6 +176,12 @@ document.addEventListener('DOMContentLoaded', () => {
         isRolling = true;
         rollButton.disabled = true;
 
+        // Hide toast while rolling new set
+        copyButton.classList.add('hidden');
+
+        // Speak when dice start rolling
+        speakIntro();
+
         await animateResult(resultElements.map, 'map');
         await animateResult(resultElements.loot, 'loot');
         await animateResult(resultElements.style, 'style');
@@ -113,6 +189,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         isRolling = false;
         rollButton.disabled = false;
+
+        // Show toast and speak after all rolls complete
+        showCopyToast();
     }
 
     soloButton.addEventListener('click', () => selectSquad('solo'));
@@ -123,9 +202,22 @@ document.addEventListener('DOMContentLoaded', () => {
     rerollButtons.forEach(button => {
         button.addEventListener('click', async () => {
             if (isRolling) return;
+
+            // Hide toast to prevent copying unstable state
+            copyButton.classList.add('hidden');
+
+            // Speak when reroll starts
+            speakIntro();
+
             const category = button.dataset.category;
             const element = resultElements[category];
             await animateResult(element, category);
+
+            // Only show toast if no other dice are currently rolling
+            // This prevents the toast from appearing prematurely if multiple rerolls were clicked
+            if (document.querySelectorAll('.rolling').length === 0) {
+                showCopyToast();
+            }
         });
     });
 
@@ -147,10 +239,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const textToCopy = `Hey, Raider - want to team up? We are heading to ${map}, ${lootText} and ${styleText}. Code word for this run is ${codeWord}.`;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
-            showCopyFeedback('✅');
+            showCopyFeedback(true);
         }).catch(err => {
             console.error('Failed to copy: ', err);
-            showCopyFeedback('❌');
+            showCopyFeedback(false);
         });
     });
 

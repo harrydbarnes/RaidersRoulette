@@ -16,7 +16,7 @@
 </head>
 <body>
     <div class="container">
-        <button id="copy-btn" title="Copy to clipboard" aria-label="Copy to clipboard">📋</button>
+        <!-- Copy button moved to bottom right toast -->
         <h1>Arc Raiders Roulette</h1>
         <div class="squad-selection">
             <button id="solo">Solo</button>
@@ -26,23 +26,29 @@
         <button id="roll">Roll The Dice</button>
         <div class="results">
             <div class="result-category">
-                <h2>Map <button class="reroll-btn" data-category="map">🎲</button></h2>
+                <h2>Map <button class="reroll-btn" data-category="map" aria-label="Reroll Map">🎲</button></h2>
                 <p id="map-result"></p>
             </div>
             <div class="result-category">
-                <h2>Loot <button class="reroll-btn" data-category="loot">🎲</button></h2>
+                <h2>Loot <button class="reroll-btn" data-category="loot" aria-label="Reroll Loot">🎲</button></h2>
                 <p id="loot-result"></p>
             </div>
             <div class="result-category">
-                <h2>Style <button class="reroll-btn" data-category="style">🎲</button></h2>
+                <h2>Style <button class="reroll-btn" data-category="style" aria-label="Reroll Style">🎲</button></h2>
                 <p id="style-result"></p>
             </div>
             <div class="result-category">
-                <h2>Code Word <button class="reroll-btn" data-category="codeWord">🎲</button></h2>
+                <h2>Code Word <button class="reroll-btn" data-category="codeWord" aria-label="Reroll Code Word">🎲</button></h2>
                 <p id="code-word-result"></p>
             </div>
         </div>
     </div>
+
+    <button id="copy-toast" class="toast hidden">
+        <span class="icon">📋</span>
+        <span class="text">Copy Loadout</span>
+    </button>
+
     <script src="script.js"></script>
 </body>
 </html>
