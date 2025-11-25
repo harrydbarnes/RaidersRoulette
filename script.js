@@ -60,9 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Attempt to find an enthusiastic American male voice
         // Note: 'en-US' is standard. Gender detection is tricky across browsers/OS.
         // We look for common names or just prioritize en-US.
+        // Fallback to browser default if no 'en-US' voice is found (instead of voices[0] which might be wrong language)
         const voice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Male') || v.name.includes('David') || v.name.includes('Google US English')))
-                   || voices.find(v => v.lang === 'en-US')
-                   || voices[0];
+                   || voices.find(v => v.lang === 'en-US');
 
         if (voice) {
             utterance.voice = voice;
