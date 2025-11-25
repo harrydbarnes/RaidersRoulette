@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const element = resultElements[category];
             await animateResult(element, category);
 
-            // Only show toast and speak if no other dice are currently rolling
+            // Only show toast if no other dice are currently rolling
             // This prevents the toast from appearing prematurely if multiple rerolls were clicked
             if (document.querySelectorAll('.rolling').length === 0) {
                 showCopyToast();
