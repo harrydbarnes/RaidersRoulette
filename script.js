@@ -24,7 +24,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Constants
     const COPY_FEEDBACK_DURATION_MS = 2000;
-    const TTS_TEXT = "Hey Raider, want to team up?";
+    const TTS_PHRASES = [
+        "Hey Raider, want to team up?",
+        "Don't shoot!",
+        "Awh hunny, did you lose your loot again?",
+        "Are you feeling lucky, punk?",
+        "Raider, I’ve got room in my squad if you’re breathing and vaguely competent.",
+        "Patch up quick, there’s trouble humming on the horizon.",
+        "Contact up high, keep your head down unless you don’t mind losing it.",
+        "Supplies are thin. Take what you can, share if you feel sentimental.",
+        "Scanner’s lighting up. Might be salvage, might be death. Only one way to know.",
+        "If you’re heading into the valley, stick close. The drones love a lonely target.",
+        "You shoot straight, you stay alive. Fancy footwork’s optional."
+    ];
     const TTS_PITCH = 1.1;
     const TTS_RATE = 1.1;
 
@@ -43,19 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function speakIntro() {
         if (!window.speechSynthesis) return;
 
-        // Check if we have already played the intro this session
-        if (sessionStorage.getItem('hasPlayedIntro')) {
-            return;
-        }
-
         // Cancel any currently playing speech to avoid overlap
         window.speechSynthesis.cancel();
 
-        const utterance = new SpeechSynthesisUtterance(TTS_TEXT);
-
-        // Mark as played
-        // We set it here so subsequent calls in this session will skip
-        sessionStorage.setItem('hasPlayedIntro', 'true');
+        const ttsText = getRandomElement(TTS_PHRASES);
+        const utterance = new SpeechSynthesisUtterance(ttsText);
 
         // Attempt to find an enthusiastic American male voice
         // Note: 'en-US' is standard. Gender detection is tricky across browsers/OS.
