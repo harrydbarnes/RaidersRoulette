@@ -62,7 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // We look for common names or just prioritize en-US.
         // Fallback to browser default if no 'en-US' voice is found (instead of voices[0] which might be wrong language)
         const usVoices = voices.filter(v => v.lang === 'en-US');
-        const voice = usVoices.find(v => v.name.includes('Male') || v.name.includes('David') || v.name.includes('Google US English')) || usVoices[0];
+        // Exclude generic 'Google US English' as it is often female
+        const voice = usVoices.find(v => v.name.includes('Male') || v.name.includes('David') || (v.name.includes('Google US English') && v.name.includes('Male'))) || usVoices[0];
 
         if (voice) {
             utterance.voice = voice;
