@@ -207,8 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     rerollButtons.forEach(button => {
         button.addEventListener('click', async () => {
-            if (isRolling) return;
-            if (button.classList.contains('rolling')) return;
+            if (isRolling || button.classList.contains('rolling')) return;
 
             // Disable main roll button to prevent conflicts
             rollButton.disabled = true;
