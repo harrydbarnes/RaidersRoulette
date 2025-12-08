@@ -35,7 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
         "Supplies are thin. Take what you can, share if you feel sentimental.",
         "Scanner’s lighting up. Might be salvage, might be death. Only one way to know.",
         "If you’re heading into the valley, stick close. The drones love a lonely target.",
-        "You shoot straight, you stay alive. Fancy footwork’s optional."
+        "You shoot straight, you stay alive. Fancy footwork’s optional.",
+        "Want to expedite and chill together?"
     ];
     const TTS_PITCH = 1.1;
     const TTS_RATE = 1.1;
@@ -206,7 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     rerollButtons.forEach(button => {
         button.addEventListener('click', async () => {
-            if (isRolling) return;
+            if (isRolling || button.classList.contains('rolling')) return;
+
+            // Disable main roll button to prevent conflicts
+            rollButton.disabled = true;
 
             // Hide toast to prevent copying unstable state
             copyButton.classList.add('hidden');
@@ -221,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Only show toast if no other dice are currently rolling
             // This prevents the toast from appearing prematurely if multiple rerolls were clicked
             if (document.querySelectorAll('.rolling').length === 0) {
+                rollButton.disabled = false;
                 showCopyToast();
             }
         });
