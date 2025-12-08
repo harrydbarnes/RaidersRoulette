@@ -207,6 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
     rerollButtons.forEach(button => {
         button.addEventListener('click', async () => {
             if (isRolling) return;
+            if (button.classList.contains('rolling')) return;
+
+            // Disable main roll button to prevent conflicts
+            rollButton.disabled = true;
 
             // Hide toast to prevent copying unstable state
             copyButton.classList.add('hidden');
@@ -221,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Only show toast if no other dice are currently rolling
             // This prevents the toast from appearing prematurely if multiple rerolls were clicked
             if (document.querySelectorAll('.rolling').length === 0) {
+                rollButton.disabled = false;
                 showCopyToast();
             }
         });
