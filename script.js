@@ -35,7 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
         "Supplies are thin. Take what you can, share if you feel sentimental.",
         "Scanner’s lighting up. Might be salvage, might be death. Only one way to know.",
         "If you’re heading into the valley, stick close. The drones love a lonely target.",
-        "You shoot straight, you stay alive. Fancy footwork’s optional."
+        "You shoot straight, you stay alive. Fancy footwork’s optional.",
+        "Want to expedite and chill together?"
     ];
     const TTS_PITCH = 1.1;
     const TTS_RATE = 1.1;
