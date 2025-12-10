@@ -122,14 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Set initial dice emoji
-    Object.values(resultElements).forEach(el => {
-        // Skip condition element initially or set it to empty/placeholder
-        // If we set it to dice, it might look weird being below.
-        // But the user rolled "w/Condition" or " - Normal".
-        // Let's just set it to empty initially or '🎲' as well.
-        // '🎲' is fine.
-        el.textContent = '🎲';
-    });
+    Object.values(resultElements).forEach(el => el.textContent = '🎲');
 
     function selectSquad(size) {
         squadSize = size;
@@ -279,16 +272,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Set initial state
-    selectSquad('solo');
-});
-
     // --- Trophy Feature ---
     const trophyBtn = document.getElementById('trophy-btn');
     const trophyModal = document.getElementById('trophy-modal');
     const closeModalBtn = document.getElementById('close-modal');
     const trophySortSelect = document.getElementById('trophy-sort');
     const trophyList = document.getElementById('trophy-list');
+    const TRACKED_TROPHIES_STORAGE_KEY = 'arc_raiders_tracked_trophies';
 
     // Trophy Data
     const trophies = [
@@ -346,29 +336,27 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // State
-    let trackedTrophies = new Set(JSON.parse(localStorage.getItem('arc_raiders_tracked_trophies') || '[]'));
+    let trackedTrophies = new Set(JSON.parse(localStorage.getItem(TRACKED_TROPHIES_STORAGE_KEY) || '[]'));
     let trophySortMethod = 'name';
 
     // Rarity values for sorting
     const rarityOrder = { 'Platinum': 0, 'Gold': 1, 'Silver': 2, 'Bronze': 3 };
 
     function renderTrophies() {
-        trophyList.innerHTML = '';
+        trophyList.replaceChildren();
 
         const sortedTrophies = [...trophies].sort((a, b) => {
-            // First check tracking
-            const aTracked = trackedTrophies.has(a.name);
-            const bTracked = trackedTrophies.has(b.name);
+            // Put tracked items first
+            const trackedSort = trackedTrophies.has(b.name) - trackedTrophies.has(a.name);
+            if (trackedSort !== 0) return trackedSort;
 
-            if (aTracked && !bTracked) return -1;
-            if (!aTracked && bTracked) return 1;
-
-            // Then check sort method
+            // Then sort by selected method
             if (trophySortMethod === 'rarity') {
-                const diff = rarityOrder[a.rarity] - rarityOrder[b.rarity];
-                if (diff !== 0) return diff;
+                const raritySort = rarityOrder[a.rarity] - rarityOrder[b.rarity];
+                if (raritySort !== 0) return raritySort;
             }
-            // Default to name sort (secondary for rarity, primary for name)
+
+            // Fallback to name sort
             return a.name.localeCompare(b.name);
         });
 
@@ -418,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             trackedTrophies.add(name);
         }
-        localStorage.setItem('arc_raiders_tracked_trophies', JSON.stringify([...trackedTrophies]));
+        localStorage.setItem(TRACKED_TROPHIES_STORAGE_KEY, JSON.stringify([...trackedTrophies]));
         renderTrophies();
     }
 
@@ -442,3 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
         trophySortMethod = e.target.value;
         renderTrophies();
     });
+
+    // Set initial state
+    selectSquad('solo');
+});
