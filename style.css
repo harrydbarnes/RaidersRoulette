@@ -178,3 +178,150 @@ p {
     margin-top: -10px;
     min-height: 20px;
 }
+
+/* Trophy Button */
+.trophy-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    z-index: 10;
+}
+
+.trophy-btn:hover {
+    transform: scale(1.2);
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.modal.hidden {
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    background-color: #2a2a2a;
+    width: 90%;
+    max-width: 600px;
+    height: 80%;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    border: 1px solid #ff6600;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #ff6600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+.modal-controls {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.modal-controls select {
+    background-color: #3a3a3a;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 5px;
+    border-radius: 5px;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.trophy-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.trophy-item {
+    background-color: #3a3a3a;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    text-align: left;
+    border-left: 5px solid transparent;
+}
+
+.trophy-item.platinum { border-left-color: #E5E4E2; }
+.trophy-item.gold { border-left-color: #FFD700; }
+.trophy-item.silver { border-left-color: #C0C0C0; }
+.trophy-item.bronze { border-left-color: #CD7F32; }
+
+.trophy-checkbox {
+    margin-top: 5px;
+    transform: scale(1.5);
+    cursor: pointer;
+}
+
+.trophy-info {
+    flex-grow: 1;
+}
+
+.trophy-name {
+    font-weight: bold;
+    color: #ff6600;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.trophy-desc {
+    font-size: 14px;
+    color: #cccccc;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.trophy-rarity {
+    font-size: 12px;
+    font-style: italic;
+    color: #888;
+}
+
+/* Tracked item styling */
+.trophy-item.tracked {
+    background-color: #4a3a2a;
+    border: 1px solid #ff6600;
+}

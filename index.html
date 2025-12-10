@@ -16,6 +16,7 @@
 </head>
 <body>
     <div class="container">
+        <button id="trophy-btn" class="trophy-btn" aria-label="Trophy List">🏆</button>
         <!-- Copy button moved to bottom right toast -->
         <h1>Arc Raiders Roulette</h1>
         <div class="squad-selection">
@@ -49,6 +50,25 @@
         <span class="icon">📋</span>
         <span class="text">Share</span>
     </button>
+
+    <div id="trophy-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Trophies</h2>
+                <button id="close-modal" class="close-btn" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-controls">
+                <label for="trophy-sort">Sort by:</label>
+                <select id="trophy-sort">
+                    <option value="name">Name</option>
+                    <option value="rarity">Rarity</option>
+                </select>
+            </div>
+            <ul id="trophy-list" class="trophy-list">
+                <!-- Trophies will be injected here -->
+            </ul>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

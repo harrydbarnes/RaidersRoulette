@@ -282,3 +282,163 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set initial state
     selectSquad('solo');
 });
+
+    // --- Trophy Feature ---
+    const trophyBtn = document.getElementById('trophy-btn');
+    const trophyModal = document.getElementById('trophy-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const trophySortSelect = document.getElementById('trophy-sort');
+    const trophyList = document.getElementById('trophy-list');
+
+    // Trophy Data
+    const trophies = [
+        { name: "Many Tales to Tell", rarity: "Platinum", description: "Collect all trophies" },
+        { name: "Scavenger", rarity: "Silver", description: "Search 50 loot containers" },
+        { name: "Well-Traveled", rarity: "Bronze", description: "Safely return from Dam Battlegrounds, Buried City and Spaceport" },
+        { name: "Escape Artist", rarity: "Gold", description: "Safely return to Speranza 100 times" },
+        { name: "Rite of Passage", rarity: "Bronze", description: "Safely return to Speranza for the first time" },
+        { name: "Into Thin Air", rarity: "Bronze", description: "Safely return to Speranza through a Raider Hatch" },
+        { name: "Behind Closed Doors", rarity: "Bronze", description: "Visit a locked room on Dam Battlegrounds, Buried City or Spaceport" },
+        { name: "The Big Haul", rarity: "Bronze", description: "Return to Speranza with 50,000 worth of loot" },
+        { name: "The Long Haul", rarity: "Bronze", description: "Reach a total lifetime loot value of 1,000,000" },
+        { name: "Expert Weaponsmith", rarity: "Bronze", description: "Upgrade a weapon to Tier IV" },
+        { name: "Well-Armed", rarity: "Bronze", description: "Have two weapons of Tier II or higher equipped in a round" },
+        { name: "Back from the Brink", rarity: "Bronze", description: "Revive a squadmate ten times" },
+        { name: "Legend of Speranza", rarity: "Gold", description: "Reach level 75" },
+        { name: "Dedicated to the Craft", rarity: "Silver", description: "Have five stations upgraded to level 3 or higher" },
+        { name: "Self-Sufficient", rarity: "Bronze", description: "Install a station in your Workshop" },
+        { name: "In Your Element", rarity: "Bronze", description: "Reach level 10" },
+        { name: "Getting Serious", rarity: "Bronze", description: "Upgrade a Workshop station to level 2" },
+        { name: "Same Song, Same Verse", rarity: "Bronze", description: "Set off two car alarms in a single round" },
+        { name: "In the Nick of Time", rarity: "Bronze", description: "Safely return to Speranza with less than 5 seconds left in the round" },
+        { name: "Not Over Till It’s Over", rarity: "Bronze", description: "Safely return to Speranza while drowned" },
+        { name: "Practice Makes Perfect", rarity: "Bronze", description: "Visit the Practice Range" },
+        { name: "Bells and Whistles", rarity: "Bronze", description: "Have 4 weapon mods on a single weapon" },
+        { name: "Long Shot", rarity: "Bronze", description: "Hit a target over 250 meters away" },
+        { name: "No Going Back", rarity: "Bronze", description: "(Hidden) Be topside when a safe window closes" },
+        { name: "Just Dropping In", rarity: "Bronze", description: "(Hidden) Get hit by a Supply Drop" },
+        { name: "Most Durable Pants in Speranza", rarity: "Bronze", description: "Slide 80 meters without stopping" },
+        { name: "See You Never", rarity: "Bronze", description: "(Hidden) Return safely to Speranza while leaving a squadmate behind" },
+        { name: "Today You, Tomorrow Me", rarity: "Bronze", description: "Revive an encountered Raider with a Defibrillator" },
+        { name: "Top of the World", rarity: "Bronze", description: "(Hidden) Reach the top of the Launch Towers in Spaceport" },
+        { name: "For Science!", rarity: "Bronze", description: "Get gas, stun, and burn statuses at the same time" },
+        { name: "Shots Fired", rarity: "Bronze", description: "Deal 1000 damage to ARC enemies" },
+        { name: "Racking Them Up", rarity: "Bronze", description: "Destroy 50 ARC enemies" },
+        { name: "Trail of Destruction", rarity: "Silver", description: "Destroy 100 ARC enemies" },
+        { name: "Death From Above", rarity: "Silver", description: "(Hidden) Deal 50 damage to any enemy while atop a Rocketeer" },
+        { name: "Three Birds, One Stone", rarity: "Bronze", description: "Destroy 3 ARC enemies with a single Wolfpack grenade" },
+        { name: "Bringing Down the Big Guns", rarity: "Bronze", description: "Destroy a Rocketeer" },
+        { name: "Into the Breach", rarity: "Bronze", description: "Destroy a Bastion" },
+        { name: "A Tale for the Ages", rarity: "Gold", description: "Destroy the Queen" },
+        { name: "Blindsided", rarity: "Silver", description: "Destroy a Sentinel with a Raider Tool" },
+        { name: "Snitches get Stitched", rarity: "Bronze", description: "Destroy a Snitch with a Stitcher" },
+        { name: "Comparative Study", rarity: "Bronze", description: "Use 4 different weapons to deal damage in the Practice Range" },
+        { name: "Hook, Line, and Sinker", rarity: "Bronze", description: "Use a Lure Grenade to make a drone attack another drone" },
+        { name: "Mechanical Failure", rarity: "Bronze", description: "Shoot a thruster off a Wasp" },
+        { name: "Unyielding", rarity: "Bronze", description: "Knock out 10 Raiders" },
+        { name: "A Vendetta Is Born", rarity: "Bronze", description: "(Hidden) Get downed and knocked out while inside a return point" },
+        { name: "Horseshoes and Hand Grenades", rarity: "Bronze", description: "Down an encountered Raider with a grenade" },
+        { name: "Crossed the Threshold", rarity: "Bronze", description: "Knock out a Raider" },
+        { name: "Up Close and Personal", rarity: "Bronze", description: "Knock out a Raider with a Raider Tool" },
+        { name: "The Friends We Made Along The Way", rarity: "Bronze", description: "Return to Speranza together with an encountered Raider" },
+        { name: "Enemy of My Enemy", rarity: "Bronze", description: "(Hidden) Get an encountered Raider downed by ARC enemies summoned with a Snitch Scanner" },
+        { name: "Heart of Gold", rarity: "Bronze", description: "Be thanked 10 times in direct response to something you did" }
+    ];
+
+    // State
+    let trackedTrophies = new Set(JSON.parse(localStorage.getItem('arc_raiders_tracked_trophies') || '[]'));
+    let trophySortMethod = 'name';
+
+    // Rarity values for sorting
+    const rarityOrder = { 'Platinum': 0, 'Gold': 1, 'Silver': 2, 'Bronze': 3 };
+
+    function renderTrophies() {
+        trophyList.innerHTML = '';
+
+        const sortedTrophies = [...trophies].sort((a, b) => {
+            // First check tracking
+            const aTracked = trackedTrophies.has(a.name);
+            const bTracked = trackedTrophies.has(b.name);
+
+            if (aTracked && !bTracked) return -1;
+            if (!aTracked && bTracked) return 1;
+
+            // Then check sort method
+            if (trophySortMethod === 'rarity') {
+                const diff = rarityOrder[a.rarity] - rarityOrder[b.rarity];
+                if (diff !== 0) return diff;
+            }
+            // Default to name sort (secondary for rarity, primary for name)
+            return a.name.localeCompare(b.name);
+        });
+
+        sortedTrophies.forEach(trophy => {
+            const li = document.createElement('li');
+            li.className = `trophy-item ${trophy.rarity.toLowerCase()}`;
+            if (trackedTrophies.has(trophy.name)) {
+                li.classList.add('tracked');
+            }
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'trophy-checkbox';
+            checkbox.checked = trackedTrophies.has(trophy.name);
+            checkbox.addEventListener('change', () => {
+                toggleTrackTrophy(trophy.name);
+            });
+
+            const info = document.createElement('div');
+            info.className = 'trophy-info';
+
+            const name = document.createElement('span');
+            name.className = 'trophy-name';
+            name.textContent = trophy.name;
+
+            const desc = document.createElement('span');
+            desc.className = 'trophy-desc';
+            desc.textContent = trophy.description;
+
+            const rarity = document.createElement('span');
+            rarity.className = 'trophy-rarity';
+            rarity.textContent = trophy.rarity;
+
+            info.appendChild(name);
+            info.appendChild(desc);
+            info.appendChild(rarity);
+
+            li.appendChild(checkbox);
+            li.appendChild(info);
+            trophyList.appendChild(li);
+        });
+    }
+
+    function toggleTrackTrophy(name) {
+        if (trackedTrophies.has(name)) {
+            trackedTrophies.delete(name);
+        } else {
+            trackedTrophies.add(name);
+        }
+        localStorage.setItem('arc_raiders_tracked_trophies', JSON.stringify([...trackedTrophies]));
+        renderTrophies();
+    }
+
+    trophyBtn.addEventListener('click', () => {
+        renderTrophies();
+        trophyModal.classList.remove('hidden');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        trophyModal.classList.add('hidden');
+    });
+
+    // Close modal when clicking outside content
+    trophyModal.addEventListener('click', (e) => {
+        if (e.target === trophyModal) {
+            trophyModal.classList.add('hidden');
+        }
+    });
+
+    trophySortSelect.addEventListener('change', (e) => {
+        trophySortMethod = e.target.value;
+        renderTrophies();
+    });
