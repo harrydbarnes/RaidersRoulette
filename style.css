@@ -171,3 +171,10 @@ p {
 .rolling {
     animation: roll 0.3s linear infinite;
 }
+
+.condition-text {
+    font-size: 14px;
+    color: #b0b0b0;
+    margin-top: -10px;
+    min-height: 20px;
+}

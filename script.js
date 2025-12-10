@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const resultElements = {
         map: document.getElementById('map-result'),
+        mapCondition: document.getElementById('map-condition-result'),
         loot: document.getElementById('loot-result'),
         style: document.getElementById('style-result'),
         codeWord: document.getElementById('code-word-result'),
@@ -104,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const options = {
         map: ['Dam Battlegrounds', 'Buried City', 'Spaceport', 'The Blue Gate', 'Stella Montis'],
+        mapCondition: ['w/Condition', ' - Normal'],
         loot: ['Loot Goblin', 'Standard Run', 'No Loot'],
         style: {
             solo: ['Lone Wolf', 'Buddy Up', 'Decepticon', 'Kill on Sight'],
@@ -120,7 +122,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Set initial dice emoji
-    Object.values(resultElements).forEach(el => el.textContent = '🎲');
+    Object.values(resultElements).forEach(el => {
+        // Skip condition element initially or set it to empty/placeholder
+        // If we set it to dice, it might look weird being below.
+        // But the user rolled "w/Condition" or " - Normal".
+        // Let's just set it to empty initially or '🎲' as well.
+        // '🎲' is fine.
+        el.textContent = '🎲';
+    });
 
     function selectSquad(size) {
         squadSize = size;
@@ -188,7 +197,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Speak when dice start rolling
         speakIntro();
 
-        await animateResult(resultElements.map, 'map');
+        // Animate map and map condition concurrently
+        await Promise.all([
+            animateResult(resultElements.map, 'map'),
+            animateResult(resultElements.mapCondition, 'mapCondition')
+        ]);
+
         await animateResult(resultElements.loot, 'loot');
         await animateResult(resultElements.style, 'style');
         await animateResult(resultElements.codeWord, 'codeWord');
@@ -220,7 +234,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const category = button.dataset.category;
             const element = resultElements[category];
-            await animateResult(element, category);
+
+            if (category === 'map') {
+                await Promise.all([
+                    animateResult(element, category),
+                    animateResult(resultElements.mapCondition, 'mapCondition')
+                ]);
+            } else {
+                await animateResult(element, category);
+            }
 
             // Only show toast if no other dice are currently rolling
             // This prevents the toast from appearing prematurely if multiple rerolls were clicked
@@ -233,11 +255,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     copyButton.addEventListener('click', () => {
         const map = resultElements.map.textContent;
+        const mapCondition = resultElements.mapCondition.textContent;
         const loot = resultElements.loot.textContent;
         const style = resultElements.style.textContent;
         const codeWord = resultElements.codeWord.textContent;
 
-        if ([map, loot, style, codeWord].some(result => result === '🎲')) {
+        if ([map, mapCondition, loot, style, codeWord].some(result => result === '🎲')) {
             // Don't copy if not all results are available
              return;
         }
@@ -246,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const styleText = styleTextPhrases[style] || `we will ${style}`;
 
-        const textToCopy = `Hey, Raider - want to team up? We are heading to ${map}, ${lootText} and ${styleText}. Code word for this run is ${codeWord}.`;
+        const textToCopy = `Hey, Raider - want to team up? We are heading to ${map} ${mapCondition}, ${lootText} and ${styleText}. Code word for this run is ${codeWord}.`;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
             showCopyFeedback(true);
