@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const styleText = styleTextPhrases[style] || `we will ${style}`;
 
-        const mapConditionText = mapCondition.includes('Normal') ? '' : ` ${mapCondition}`;
+        const mapConditionText = mapCondition === '- Normal' ? '' : ` ${mapCondition}`;
         const textToCopy = `Hey, Raider - want to team up? We are heading to ${map}${mapConditionText}, ${lootText} and ${styleText}. Code word for this run is ${codeWord}.`;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
@@ -281,10 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.trophySortSelect = document.getElementById('trophy-sort');
             this.trophyList = document.getElementById('trophy-list');
 
-            if (!this.trophyBtn || !this.trophyModal || !this.closeModalBtn || !this.trophySortSelect || !this.trophyList) {
-                console.error('TrophyManager: One or more required DOM elements are missing.');
-                return;
-            }
+            this.validateElements();
 
             this.trophies = [];
             this.trackedTrophies = new Set();
@@ -294,7 +291,26 @@ document.addEventListener('DOMContentLoaded', () => {
             this.init();
         }
 
+        validateElements() {
+            const elements = {
+                trophyBtn: this.trophyBtn,
+                trophyModal: this.trophyModal,
+                closeModalBtn: this.closeModalBtn,
+                trophySortSelect: this.trophySortSelect,
+                trophyList: this.trophyList
+            };
+
+            for (const [name, element] of Object.entries(elements)) {
+                if (!element) {
+                    console.error(`TrophyManager: Required DOM element '${name}' is missing.`);
+                }
+            }
+        }
+
         init() {
+            if (!this.trophyBtn || !this.trophyModal) return; // Stop if critical elements missing
+
+            this.handleKeydown = this.handleKeydown.bind(this);
             this.loadTrackedTrophies();
             this.setupEventListeners();
         }
@@ -342,15 +358,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
         openModal() {
             this.trophyModal.classList.remove('hidden');
+            document.addEventListener('keydown', this.handleKeydown);
+
             if (this.trophies.length === 0) {
                 this.fetchTrophies();
             } else {
                 this.renderTrophies();
             }
+
+            // Trap focus
+            const focusableElements = this.trophyModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusableElements.length) {
+                focusableElements[0].focus();
+            }
         }
 
         closeModal() {
             this.trophyModal.classList.add('hidden');
+            document.removeEventListener('keydown', this.handleKeydown);
+            this.trophyBtn.focus();
+        }
+
+        handleKeydown(e) {
+            if (e.key === 'Escape') {
+                this.closeModal();
+                return;
+            }
+
+            if (e.key === 'Tab') {
+                const focusableElements = this.trophyModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === firstElement) {
+                        e.preventDefault();
+                        lastElement.focus();
+                    }
+                } else {
+                    if (document.activeElement === lastElement) {
+                        e.preventDefault();
+                        firstElement.focus();
+                    }
+                }
+            }
         }
 
         async fetchTrophies() {
