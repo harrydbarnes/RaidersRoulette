@@ -327,7 +327,9 @@ document.addEventListener('DOMContentLoaded', () => {
             this.trophyList.addEventListener('change', (e) => {
                 if (e.target.matches('.trophy-checkbox')) {
                     const trophyName = e.target.dataset.name;
-                    this.toggleTrackTrophy(trophyName);
+                    if (trophyName) {
+                        this.toggleTrackTrophy(trophyName);
+                    }
                 }
             });
         }
@@ -356,7 +358,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) {
                     throw new Error(`Network response was not ok: ${response.statusText}`);
                 }
-                this.trophies = await response.json();
+                const data = await response.json();
+                if (!Array.isArray(data)) {
+                    throw new Error('Trophy data is not in the expected array format.');
+                }
+                this.trophies = data;
                 this.renderTrophies();
             } catch (err) {
                 console.error('Error loading trophies:', err);
@@ -375,7 +381,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (trackedSort !== 0) return trackedSort;
 
                 if (this.trophySortMethod === 'rarity') {
-                    const raritySort = this.rarityOrder[a.rarity] - this.rarityOrder[b.rarity];
+                    const rarityA = this.rarityOrder[a.rarity] ?? Infinity;
+                    const rarityB = this.rarityOrder[b.rarity] ?? Infinity;
+                    const raritySort = rarityA - rarityB;
                     if (raritySort !== 0) return raritySort;
                 }
 
