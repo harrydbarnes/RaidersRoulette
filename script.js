@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const options = {
         map: ['Dam Battlegrounds', 'Buried City', 'Spaceport', 'The Blue Gate', 'Stella Montis'],
-        mapCondition: ['w/Condition', ' - Normal'],
+        mapCondition: ['w/Condition', '- Normal'],
         loot: ['Loot Goblin', 'Standard Run', 'No Loot'],
         style: {
             solo: ['Lone Wolf', 'Buddy Up', 'Decepticon', 'Kill on Sight'],
@@ -270,119 +270,165 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Trophy Feature ---
-    const trophyBtn = document.getElementById('trophy-btn');
-    const trophyModal = document.getElementById('trophy-modal');
-    const closeModalBtn = document.getElementById('close-modal');
-    const trophySortSelect = document.getElementById('trophy-sort');
-    const trophyList = document.getElementById('trophy-list');
-    const TRACKED_TROPHIES_STORAGE_KEY = 'arc_raiders_tracked_trophies';
+    class TrophyManager {
+        constructor() {
+            this.trophyBtn = document.getElementById('trophy-btn');
+            this.trophyModal = document.getElementById('trophy-modal');
+            this.closeModalBtn = document.getElementById('close-modal');
+            this.trophySortSelect = document.getElementById('trophy-sort');
+            this.trophyList = document.getElementById('trophy-list');
+            this.TRACKED_TROPHIES_STORAGE_KEY = 'arc_raiders_tracked_trophies';
 
-    // Trophy Data
-    let trophies = [];
+            this.trophies = [];
+            this.trackedTrophies = new Set();
+            this.trophySortMethod = 'name';
+            this.rarityOrder = { 'Platinum': 0, 'Gold': 1, 'Silver': 2, 'Bronze': 3 };
 
-    // State
-    let trackedTrophies = new Set(JSON.parse(localStorage.getItem(TRACKED_TROPHIES_STORAGE_KEY) || '[]'));
+            this.init();
+        }
 
-    // Fetch trophies
-    fetch('trophies.json')
-        .then(response => response.json())
-        .then(data => {
-            trophies = data;
-        })
-        .catch(err => console.error('Error loading trophies:', err));
-    let trophySortMethod = 'name';
+        init() {
+            this.loadTrackedTrophies();
+            this.setupEventListeners();
+        }
 
-    // Rarity values for sorting
-    const rarityOrder = { 'Platinum': 0, 'Gold': 1, 'Silver': 2, 'Bronze': 3 };
-
-    function renderTrophies() {
-        const sortedTrophies = [...trophies].sort((a, b) => {
-            // Put tracked items first
-            const trackedSort = trackedTrophies.has(b.name) - trackedTrophies.has(a.name);
-            if (trackedSort !== 0) return trackedSort;
-
-            // Then sort by selected method
-            if (trophySortMethod === 'rarity') {
-                const raritySort = rarityOrder[a.rarity] - rarityOrder[b.rarity];
-                if (raritySort !== 0) return raritySort;
+        loadTrackedTrophies() {
+            try {
+                const stored = localStorage.getItem(this.TRACKED_TROPHIES_STORAGE_KEY);
+                this.trackedTrophies = new Set(JSON.parse(stored || '[]'));
+            } catch (e) {
+                console.error('Failed to parse tracked trophies from localStorage:', e);
+                this.trackedTrophies = new Set();
             }
+        }
 
-            // Fallback to name sort
-            return a.name.localeCompare(b.name);
-        });
-
-        const trophyElements = sortedTrophies.map(trophy => {
-            const li = document.createElement('li');
-            li.className = `trophy-item ${trophy.rarity.toLowerCase()}`;
-            if (trackedTrophies.has(trophy.name)) {
-                li.classList.add('tracked');
-            }
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.className = 'trophy-checkbox';
-            checkbox.checked = trackedTrophies.has(trophy.name);
-            checkbox.addEventListener('change', () => {
-                toggleTrackTrophy(trophy.name);
+        setupEventListeners() {
+            this.trophyBtn.addEventListener('click', () => {
+                this.openModal();
             });
 
-            const info = document.createElement('div');
-            info.className = 'trophy-info';
+            this.closeModalBtn.addEventListener('click', () => {
+                this.closeModal();
+            });
 
-            const name = document.createElement('span');
-            name.className = 'trophy-name';
-            name.textContent = trophy.name;
+            this.trophyModal.addEventListener('click', (e) => {
+                if (e.target === this.trophyModal) {
+                    this.closeModal();
+                }
+            });
 
-            const desc = document.createElement('span');
-            desc.className = 'trophy-desc';
-            desc.textContent = trophy.description;
+            this.trophySortSelect.addEventListener('change', (e) => {
+                this.trophySortMethod = e.target.value;
+                this.renderTrophies();
+            });
 
-            const rarity = document.createElement('span');
-            rarity.className = 'trophy-rarity';
-            rarity.textContent = trophy.rarity;
+            // Event Delegation for Checkboxes
+            this.trophyList.addEventListener('change', (e) => {
+                if (e.target.matches('.trophy-checkbox')) {
+                    const trophyName = e.target.dataset.name;
+                    this.toggleTrackTrophy(trophyName);
+                }
+            });
+        }
 
-            info.appendChild(name);
-            info.appendChild(desc);
-            info.appendChild(rarity);
+        openModal() {
+            this.trophyModal.classList.remove('hidden');
+            if (this.trophies.length === 0) {
+                this.fetchTrophies();
+            } else {
+                this.renderTrophies();
+            }
+        }
 
-            li.appendChild(checkbox);
-            li.appendChild(info);
-            return li;
-        });
+        closeModal() {
+            this.trophyModal.classList.add('hidden');
+        }
 
-        trophyList.replaceChildren(...trophyElements);
+        fetchTrophies() {
+            this.trophyList.innerHTML = '<li class="loading">Loading trophies...</li>';
+
+            fetch('trophies.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    this.trophies = data;
+                    this.renderTrophies();
+                })
+                .catch(err => {
+                    console.error('Error loading trophies:', err);
+                    this.trophyList.innerHTML = '<li class="error">Failed to load trophies. Please try again later.</li>';
+                });
+        }
+
+        renderTrophies() {
+            if (this.trophies.length === 0) return;
+
+            const sortedTrophies = [...this.trophies].sort((a, b) => {
+                const trackedSort = this.trackedTrophies.has(b.name) - this.trackedTrophies.has(a.name);
+                if (trackedSort !== 0) return trackedSort;
+
+                if (this.trophySortMethod === 'rarity') {
+                    const raritySort = this.rarityOrder[a.rarity] - this.rarityOrder[b.rarity];
+                    if (raritySort !== 0) return raritySort;
+                }
+
+                return a.name.localeCompare(b.name);
+            });
+
+            const trophyElements = sortedTrophies.map(trophy => {
+                const li = document.createElement('li');
+                li.className = `trophy-item ${trophy.rarity.toLowerCase()}`;
+                if (this.trackedTrophies.has(trophy.name)) {
+                    li.classList.add('tracked');
+                }
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'trophy-checkbox';
+                checkbox.dataset.name = trophy.name; // Store name for event delegation
+                checkbox.checked = this.trackedTrophies.has(trophy.name);
+
+                const info = document.createElement('div');
+                info.className = 'trophy-info';
+
+                const name = document.createElement('span');
+                name.className = 'trophy-name';
+                name.textContent = trophy.name;
+
+                const desc = document.createElement('span');
+                desc.className = 'trophy-desc';
+                desc.textContent = trophy.description;
+
+                const rarity = document.createElement('span');
+                rarity.className = 'trophy-rarity';
+                rarity.textContent = trophy.rarity;
+
+                info.appendChild(name);
+                info.appendChild(desc);
+                info.appendChild(rarity);
+
+                li.appendChild(checkbox);
+                li.appendChild(info);
+                return li;
+            });
+
+            this.trophyList.replaceChildren(...trophyElements);
+        }
+
+        toggleTrackTrophy(name) {
+            if (this.trackedTrophies.has(name)) {
+                this.trackedTrophies.delete(name);
+            } else {
+                this.trackedTrophies.add(name);
+            }
+            localStorage.setItem(this.TRACKED_TROPHIES_STORAGE_KEY, JSON.stringify([...this.trackedTrophies]));
+            this.renderTrophies();
+        }
     }
 
-    function toggleTrackTrophy(name) {
-        if (trackedTrophies.has(name)) {
-            trackedTrophies.delete(name);
-        } else {
-            trackedTrophies.add(name);
-        }
-        localStorage.setItem(TRACKED_TROPHIES_STORAGE_KEY, JSON.stringify([...trackedTrophies]));
-        renderTrophies();
-    }
-
-    trophyBtn.addEventListener('click', () => {
-        renderTrophies();
-        trophyModal.classList.remove('hidden');
-    });
-
-    closeModalBtn.addEventListener('click', () => {
-        trophyModal.classList.add('hidden');
-    });
-
-    // Close modal when clicking outside content
-    trophyModal.addEventListener('click', (e) => {
-        if (e.target === trophyModal) {
-            trophyModal.classList.add('hidden');
-        }
-    });
-
-    trophySortSelect.addEventListener('change', (e) => {
-        trophySortMethod = e.target.value;
-        renderTrophies();
-    });
+    new TrophyManager();
 
     // Set initial state
     selectSquad('solo');
