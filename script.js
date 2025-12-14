@@ -259,7 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const styleText = styleTextPhrases[style] || `we will ${style}`;
 
-        const textToCopy = `Hey, Raider - want to team up? We are heading to ${map} ${mapCondition}, ${lootText} and ${styleText}. Code word for this run is ${codeWord}.`;
+        const mapConditionText = mapCondition.includes('Normal') ? '' : ` ${mapCondition}`;
+        const textToCopy = `Hey, Raider - want to team up? We are heading to ${map}${mapConditionText}, ${lootText} and ${styleText}. Code word for this run is ${codeWord}.`;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
             showCopyFeedback(true);
@@ -401,14 +402,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 li.className = `trophy-item ${trophy.rarity.toLowerCase()}${isTracked ? ' tracked' : ''}`;
 
-                li.innerHTML = `
-                    <input type="checkbox" class="trophy-checkbox" data-name="${trophy.name}" ${isTracked ? 'checked' : ''}>
-                    <div class="trophy-info">
-                        <span class="trophy-name">${trophy.name}</span>
-                        <span class="trophy-desc">${trophy.description}</span>
-                        <span class="trophy-rarity">${trophy.rarity}</span>
-                    </div>
-                `;
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'trophy-checkbox';
+                checkbox.dataset.name = trophy.name;
+                checkbox.checked = isTracked;
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'trophy-info';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'trophy-name';
+                nameSpan.textContent = trophy.name;
+
+                const descSpan = document.createElement('span');
+                descSpan.className = 'trophy-desc';
+                descSpan.textContent = trophy.description;
+
+                const raritySpan = document.createElement('span');
+                raritySpan.className = 'trophy-rarity';
+                raritySpan.textContent = trophy.rarity;
+
+                infoDiv.append(nameSpan, descSpan, raritySpan);
+                li.append(checkbox, infoDiv);
                 return li;
             });
 
