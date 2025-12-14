@@ -271,13 +271,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Trophy Feature ---
     class TrophyManager {
+        static TRACKED_TROPHIES_STORAGE_KEY = 'arc_raiders_tracked_trophies';
+
         constructor() {
             this.trophyBtn = document.getElementById('trophy-btn');
             this.trophyModal = document.getElementById('trophy-modal');
             this.closeModalBtn = document.getElementById('close-modal');
             this.trophySortSelect = document.getElementById('trophy-sort');
             this.trophyList = document.getElementById('trophy-list');
-            this.TRACKED_TROPHIES_STORAGE_KEY = 'arc_raiders_tracked_trophies';
 
             this.trophies = [];
             this.trackedTrophies = new Set();
@@ -294,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         loadTrackedTrophies() {
             try {
-                const stored = localStorage.getItem(this.TRACKED_TROPHIES_STORAGE_KEY);
+                const stored = localStorage.getItem(TrophyManager.TRACKED_TROPHIES_STORAGE_KEY);
                 this.trackedTrophies = new Set(JSON.parse(stored || '[]'));
             } catch (e) {
                 console.error('Failed to parse tracked trophies from localStorage:', e);
@@ -344,22 +345,26 @@ document.addEventListener('DOMContentLoaded', () => {
             this.trophyModal.classList.add('hidden');
         }
 
-        fetchTrophies() {
-            this.trophyList.innerHTML = '<li class="loading">Loading trophies...</li>';
+        async fetchTrophies() {
+            const loadingLi = document.createElement('li');
+            loadingLi.className = 'loading';
+            loadingLi.textContent = 'Loading trophies...';
+            this.trophyList.replaceChildren(loadingLi);
 
-            fetch('trophies.json')
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
-                })
-                .then(data => {
-                    this.trophies = data;
-                    this.renderTrophies();
-                })
-                .catch(err => {
-                    console.error('Error loading trophies:', err);
-                    this.trophyList.innerHTML = '<li class="error">Failed to load trophies. Please try again later.</li>';
-                });
+            try {
+                const response = await fetch('trophies.json');
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok: ${response.statusText}`);
+                }
+                this.trophies = await response.json();
+                this.renderTrophies();
+            } catch (err) {
+                console.error('Error loading trophies:', err);
+                const errorLi = document.createElement('li');
+                errorLi.className = 'error';
+                errorLi.textContent = 'Failed to load trophies. Please try again later.';
+                this.trophyList.replaceChildren(errorLi);
+            }
         }
 
         renderTrophies() {
@@ -379,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const trophyElements = sortedTrophies.map(trophy => {
                 const li = document.createElement('li');
-                li.className = `trophy-item ${trophy.rarity.toLowerCase()}`;
+                li.classList.add('trophy-item', trophy.rarity.toLowerCase());
                 if (this.trackedTrophies.has(trophy.name)) {
                     li.classList.add('tracked');
                 }
@@ -423,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 this.trackedTrophies.add(name);
             }
-            localStorage.setItem(this.TRACKED_TROPHIES_STORAGE_KEY, JSON.stringify([...this.trackedTrophies]));
+            localStorage.setItem(TrophyManager.TRACKED_TROPHIES_STORAGE_KEY, JSON.stringify([...this.trackedTrophies]));
             this.renderTrophies();
         }
     }
