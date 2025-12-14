@@ -280,6 +280,11 @@ document.addEventListener('DOMContentLoaded', () => {
             this.trophySortSelect = document.getElementById('trophy-sort');
             this.trophyList = document.getElementById('trophy-list');
 
+            if (!this.trophyBtn || !this.trophyModal || !this.closeModalBtn || !this.trophySortSelect || !this.trophyList) {
+                console.error('TrophyManager: One or more required DOM elements are missing.');
+                return;
+            }
+
             this.trophies = [];
             this.trackedTrophies = new Set();
             this.trophySortMethod = 'name';
@@ -392,38 +397,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const trophyElements = sortedTrophies.map(trophy => {
                 const li = document.createElement('li');
-                li.classList.add('trophy-item', trophy.rarity.toLowerCase());
-                if (this.trackedTrophies.has(trophy.name)) {
-                    li.classList.add('tracked');
-                }
+                const isTracked = this.trackedTrophies.has(trophy.name);
 
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.className = 'trophy-checkbox';
-                checkbox.dataset.name = trophy.name; // Store name for event delegation
-                checkbox.checked = this.trackedTrophies.has(trophy.name);
+                li.className = `trophy-item ${trophy.rarity.toLowerCase()}${isTracked ? ' tracked' : ''}`;
 
-                const info = document.createElement('div');
-                info.className = 'trophy-info';
-
-                const name = document.createElement('span');
-                name.className = 'trophy-name';
-                name.textContent = trophy.name;
-
-                const desc = document.createElement('span');
-                desc.className = 'trophy-desc';
-                desc.textContent = trophy.description;
-
-                const rarity = document.createElement('span');
-                rarity.className = 'trophy-rarity';
-                rarity.textContent = trophy.rarity;
-
-                info.appendChild(name);
-                info.appendChild(desc);
-                info.appendChild(rarity);
-
-                li.appendChild(checkbox);
-                li.appendChild(info);
+                li.innerHTML = `
+                    <input type="checkbox" class="trophy-checkbox" data-name="${trophy.name}" ${isTracked ? 'checked' : ''}>
+                    <div class="trophy-info">
+                        <span class="trophy-name">${trophy.name}</span>
+                        <span class="trophy-desc">${trophy.description}</span>
+                        <span class="trophy-rarity">${trophy.rarity}</span>
+                    </div>
+                `;
                 return li;
             });
 
