@@ -451,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const li = document.createElement('li');
                 const isTracked = this.trackedTrophies.has(trophy.name);
 
-                li.className = `trophy-item ${trophy.rarity.toLowerCase()}${isTracked ? ' tracked' : ''}`;
+                li.className = `trophy-item ${(trophy.rarity || '').toLowerCase()}${isTracked ? ' tracked' : ''}`;
 
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
