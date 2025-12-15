@@ -308,7 +308,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         init() {
-            if (!this.trophyBtn || !this.trophyModal) return; // Stop if critical elements missing
+            if (!this.trophyBtn || !this.trophyModal || !this.closeModalBtn || !this.trophySortSelect || !this.trophyList) {
+                // validateElements already logs which elements are missing.
+                return; // Abort to prevent runtime errors.
+            }
 
             this.handleKeydown = this.handleKeydown.bind(this);
             this.loadTrackedTrophies();
