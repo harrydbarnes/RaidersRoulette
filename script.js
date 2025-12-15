@@ -44,6 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // TTS Setup
     let voices = [];
+    let availableTtsPhrases = [...TTS_PHRASES];
+    let lastSpokenPhrase = null;
+
     function loadVoices() {
         voices = window.speechSynthesis.getVoices();
     }
@@ -60,7 +63,27 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cancel any currently playing speech to avoid overlap
         window.speechSynthesis.cancel();
 
-        const ttsText = getRandomElement(TTS_PHRASES);
+        // Refresh phrases if empty
+        if (availableTtsPhrases.length === 0) {
+            availableTtsPhrases = [...TTS_PHRASES];
+            // Try to avoid immediate repetition of the very last phrase spoken
+            if (lastSpokenPhrase && availableTtsPhrases.length > 1) {
+                availableTtsPhrases = availableTtsPhrases.filter(p => p !== lastSpokenPhrase);
+            }
+        }
+
+        // If filtering left us with nothing (should cover edge case of only 1 phrase total), reset
+        if (availableTtsPhrases.length === 0) {
+             availableTtsPhrases = [lastSpokenPhrase || TTS_PHRASES[0]];
+        }
+
+        const randomIndex = Math.floor(Math.random() * availableTtsPhrases.length);
+        const ttsText = availableTtsPhrases[randomIndex];
+
+        // Remove used phrase and track last spoken
+        availableTtsPhrases.splice(randomIndex, 1);
+        lastSpokenPhrase = ttsText;
+
         const utterance = new SpeechSynthesisUtterance(ttsText);
 
         // Attempt to find an enthusiastic American male voice
@@ -500,4 +523,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set initial state
     selectSquad('solo');
+
+    // Frost Effect Logic
+    const frostOverlay = document.getElementById('frost-overlay');
+    if (frostOverlay) {
+        const now = new Date();
+        const month = now.getMonth();
+        const day = now.getDate();
+
+        // Active from December 1st through January 11th
+        // Month 11 is December, Month 0 is January
+        if (month === 11 || (month === 0 && day < 12)) {
+            // Add active class after a short delay to ensure transition triggers on load
+            setTimeout(() => {
+                frostOverlay.classList.add('active');
+            }, 100);
+        }
+    }
 });
