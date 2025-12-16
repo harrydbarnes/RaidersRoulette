@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Add active class after a short delay to ensure transition triggers on load
                 setTimeout(() => {
                     frostOverlay.classList.add('active');
-                }, 100);
+                }, 0);
             }
         }
     }
