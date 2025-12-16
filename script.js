@@ -548,7 +548,70 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     frostOverlay.classList.add('active');
                 }, 0);
+
+                // Add cracking interaction
+                document.addEventListener('click', (e) => {
+                    createCrack(e.clientX, e.clientY);
+                });
             }
+        }
+    }
+
+    function createCrack(x, y) {
+        const frostOverlay = document.getElementById('frost-overlay');
+        if (!frostOverlay) return;
+
+        const crack = document.createElement('div');
+        crack.className = 'ice-crack';
+        crack.style.left = `${x}px`;
+        crack.style.top = `${y}px`;
+
+        // Random rotation
+        const rotation = Math.random() * 360;
+        crack.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+
+        // Generate SVG crack
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        svg.setAttribute("viewBox", "0 0 100 100");
+
+        // Create 3-4 jagged lines from center
+        const numLines = 3 + Math.floor(Math.random() * 3);
+
+        for (let i = 0; i < numLines; i++) {
+            const path = document.createElementNS(svgNS, "path");
+            // Generate a jagged path from 50,50 to edge
+            const angle = (i * (360 / numLines)) + (Math.random() * 40 - 20);
+            const rad = angle * Math.PI / 180;
+            const len = 30 + Math.random() * 20; // length 30-50
+
+            // End point
+            const ex = 50 + Math.cos(rad) * len;
+            const ey = 50 + Math.sin(rad) * len;
+
+            // Mid point for jag
+            const midLen = len * (0.4 + Math.random() * 0.2);
+            const midAngle = angle + (Math.random() * 60 - 30); // deviate
+            const midRad = midAngle * Math.PI / 180;
+            const mx = 50 + Math.cos(midRad) * midLen;
+            const my = 50 + Math.sin(midRad) * midLen;
+
+            path.setAttribute("d", `M50,50 L${mx},${my} L${ex},${ey}`);
+            path.setAttribute("stroke", "rgba(255, 255, 255, 0.9)");
+            path.setAttribute("stroke-width", "1.5");
+            path.setAttribute("fill", "none");
+            path.setAttribute("stroke-linecap", "round");
+            path.setAttribute("stroke-linejoin", "round");
+
+            svg.appendChild(path);
+        }
+
+        crack.appendChild(svg);
+        frostOverlay.appendChild(crack);
+
+        // Limit number of cracks to prevent performance issues
+        if (frostOverlay.children.length > 15) {
+            frostOverlay.removeChild(frostOverlay.children[0]);
         }
     }
 
