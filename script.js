@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // TTS Setup
     let voices = [];
-    let availableTtsPhrases = [...TTS_PHRASES];
+    let availableTtsPhrases = [];
     let lastSpokenPhrase = null;
 
     function loadVoices() {
@@ -68,20 +68,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cancel any currently playing speech to avoid overlap
         window.speechSynthesis.cancel();
 
-        // Refresh phrases if empty
+        // Refresh phrases if empty and shuffle them
         if (availableTtsPhrases.length === 0) {
-            availableTtsPhrases = [...TTS_PHRASES];
-            // Try to avoid immediate repetition of the very last phrase spoken
-            if (lastSpokenPhrase && availableTtsPhrases.length > 1) {
-                availableTtsPhrases = availableTtsPhrases.filter(p => p !== lastSpokenPhrase);
+            const newPhrases = [...TTS_PHRASES];
+
+            // Fisher-Yates shuffle for an efficient and uniform shuffle.
+            for (let i = newPhrases.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newPhrases[i], newPhrases[j]] = [newPhrases[j], newPhrases[i]];
             }
+
+            // Avoid immediate repetition. If the next phrase to be popped is the same
+            // as the last one spoken, swap it with another element (e.g., the first).
+            if (newPhrases.length > 1 && newPhrases[newPhrases.length - 1] === lastSpokenPhrase) {
+                const lastIndex = newPhrases.length - 1;
+                [newPhrases[lastIndex], newPhrases[0]] = [newPhrases[0], newPhrases[lastIndex]];
+            }
+
+            availableTtsPhrases = newPhrases;
         }
 
-        const randomIndex = Math.floor(Math.random() * availableTtsPhrases.length);
-        const ttsText = availableTtsPhrases[randomIndex];
-
-        // Remove used phrase and track last spoken
-        availableTtsPhrases.splice(randomIndex, 1);
+        // Get the next phrase from the end of the shuffled list.
+        const ttsText = availableTtsPhrases.pop();
         lastSpokenPhrase = ttsText;
 
         const utterance = new SpeechSynthesisUtterance(ttsText);
