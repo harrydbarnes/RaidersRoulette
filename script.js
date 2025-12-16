@@ -533,18 +533,22 @@ document.addEventListener('DOMContentLoaded', () => {
     selectSquad('solo');
 
     // Frost Effect Logic
-    const frostOverlay = document.getElementById('frost-overlay');
-    if (frostOverlay) {
-        const now = new Date();
-        const month = now.getMonth();
-        const day = now.getDate();
+    function handleSeasonalEffects() {
+        const frostOverlay = document.getElementById('frost-overlay');
+        if (frostOverlay) {
+            const now = new Date();
+            const month = now.getMonth();
+            const day = now.getDate();
 
-        // Active from December 1st through January 11th
-        if (month === MONTH_DECEMBER || (month === MONTH_JANUARY && day < FROST_END_DAY)) {
-            // Add active class after a short delay to ensure transition triggers on load
-            setTimeout(() => {
-                frostOverlay.classList.add('active');
-            }, 100);
+            // Active from December 1st through January 11th
+            if (month === MONTH_DECEMBER || (month === MONTH_JANUARY && day < FROST_END_DAY)) {
+                // Add active class after a short delay to ensure transition triggers on load
+                setTimeout(() => {
+                    frostOverlay.classList.add('active');
+                }, 100);
+            }
         }
     }
+
+    handleSeasonalEffects();
 });
