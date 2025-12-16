@@ -79,10 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Avoid immediate repetition. If the next phrase to be popped is the same
-            // as the last one spoken, swap it with another element (e.g., the first).
+            // as the last one spoken, swap it with another random element.
             if (newPhrases.length > 1 && newPhrases[newPhrases.length - 1] === lastSpokenPhrase) {
                 const lastIndex = newPhrases.length - 1;
-                [newPhrases[lastIndex], newPhrases[0]] = [newPhrases[0], newPhrases[lastIndex]];
+                // Swap with a random element that isn't the last one
+                const swapIndex = Math.floor(Math.random() * lastIndex);
+                [newPhrases[lastIndex], newPhrases[swapIndex]] = [newPhrases[swapIndex], newPhrases[lastIndex]];
             }
 
             availableTtsPhrases = newPhrases;
