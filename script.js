@@ -42,8 +42,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const TTS_PITCH = 1.1;
     const TTS_RATE = 1.1;
 
+    // Frost Effect Dates
+    const MONTH_DECEMBER = 11;
+    const MONTH_JANUARY = 0;
+    const FROST_END_DAY = 12; // January 11th is the last day, so strictly less than 12
+
     // TTS Setup
     let voices = [];
+    let availableTtsPhrases = [];
+    let lastSpokenPhrase = null;
+
     function loadVoices() {
         voices = window.speechSynthesis.getVoices();
     }
@@ -60,7 +68,32 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cancel any currently playing speech to avoid overlap
         window.speechSynthesis.cancel();
 
-        const ttsText = getRandomElement(TTS_PHRASES);
+        // Refresh phrases if empty and shuffle them
+        if (availableTtsPhrases.length === 0) {
+            const newPhrases = [...TTS_PHRASES];
+
+            // Fisher-Yates shuffle for an efficient and uniform shuffle.
+            for (let i = newPhrases.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newPhrases[i], newPhrases[j]] = [newPhrases[j], newPhrases[i]];
+            }
+
+            // Avoid immediate repetition. If the next phrase to be popped is the same
+            // as the last one spoken, swap it with another random element.
+            if (newPhrases.length > 1 && newPhrases[newPhrases.length - 1] === lastSpokenPhrase) {
+                const lastIndex = newPhrases.length - 1;
+                // Swap with a random element that isn't the last one
+                const swapIndex = Math.floor(Math.random() * lastIndex);
+                [newPhrases[lastIndex], newPhrases[swapIndex]] = [newPhrases[swapIndex], newPhrases[lastIndex]];
+            }
+
+            availableTtsPhrases = newPhrases;
+        }
+
+        // Get the next phrase from the end of the shuffled list.
+        const ttsText = availableTtsPhrases.pop();
+        lastSpokenPhrase = ttsText;
+
         const utterance = new SpeechSynthesisUtterance(ttsText);
 
         // Attempt to find an enthusiastic American male voice
@@ -500,4 +533,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set initial state
     selectSquad('solo');
+
+    // Frost Effect Logic
+    function handleSeasonalEffects() {
+        const frostOverlay = document.getElementById('frost-overlay');
+        if (frostOverlay) {
+            const now = new Date();
+            const month = now.getMonth();
+            const day = now.getDate();
+
+            // Active from December 1st through January 11th
+            if (month === MONTH_DECEMBER || (month === MONTH_JANUARY && day < FROST_END_DAY)) {
+                // Add active class after a short delay to ensure transition triggers on load
+                setTimeout(() => {
+                    frostOverlay.classList.add('active');
+                }, 0);
+            }
+        }
+    }
+
+    handleSeasonalEffects();
 });
