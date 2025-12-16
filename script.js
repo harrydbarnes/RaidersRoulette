@@ -42,6 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const TTS_PITCH = 1.1;
     const TTS_RATE = 1.1;
 
+    // Frost Effect Dates
+    const MONTH_DECEMBER = 11;
+    const MONTH_JANUARY = 0;
+    const FROST_END_DAY = 12; // January 11th is the last day, so strictly less than 12
+
     // TTS Setup
     let voices = [];
     let availableTtsPhrases = [...TTS_PHRASES];
@@ -70,11 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (lastSpokenPhrase && availableTtsPhrases.length > 1) {
                 availableTtsPhrases = availableTtsPhrases.filter(p => p !== lastSpokenPhrase);
             }
-        }
-
-        // If filtering left us with nothing (should cover edge case of only 1 phrase total), reset
-        if (availableTtsPhrases.length === 0) {
-             availableTtsPhrases = [lastSpokenPhrase || TTS_PHRASES[0]];
         }
 
         const randomIndex = Math.floor(Math.random() * availableTtsPhrases.length);
@@ -532,8 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const day = now.getDate();
 
         // Active from December 1st through January 11th
-        // Month 11 is December, Month 0 is January
-        if (month === 11 || (month === 0 && day < 12)) {
+        if (month === MONTH_DECEMBER || (month === MONTH_JANUARY && day < FROST_END_DAY)) {
             // Add active class after a short delay to ensure transition triggers on load
             setTimeout(() => {
                 frostOverlay.classList.add('active');
