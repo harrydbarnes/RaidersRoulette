@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const MONTH_DECEMBER = 11;
     const MONTH_JANUARY = 0;
     const FROST_END_DAY = 12; // January 11th is the last day, so strictly less than 12
+    const MAX_ICE_CRACKS = 15;
 
     // TTS Setup
     let voices = [];
@@ -610,7 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
         frostOverlay.appendChild(crack);
 
         // Limit number of cracks to prevent performance issues
-        if (frostOverlay.children.length > 15) {
+        if (frostOverlay.children.length > MAX_ICE_CRACKS) {
             frostOverlay.removeChild(frostOverlay.children[0]);
         }
     }
