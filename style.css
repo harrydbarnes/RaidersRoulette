@@ -332,6 +332,7 @@ p {
     --frost-saturation: 0.9;
     --frost-vignette-color: rgba(100, 200, 255, 0.2);
     --ice-crack-color: rgba(255, 255, 255, 0.9);
+    --ice-crack-glow-color: rgba(200, 255, 255, 0.8);
 }
 
 .frost-overlay {
@@ -385,7 +386,15 @@ p {
 }
 
 .ice-crack svg {
-    filter: drop-shadow(0 0 2px rgba(200, 255, 255, 0.8));
+    filter: drop-shadow(0 0 2px var(--ice-crack-glow-color));
     width: 100%;
     height: 100%;
+}
+
+.ice-crack svg path {
+    stroke: var(--ice-crack-color);
+    stroke-width: 1.5px;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }

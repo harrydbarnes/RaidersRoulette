@@ -536,6 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectSquad('solo');
 
     // Frost Effect Logic
+    let canCreateCrack = true;
     function handleSeasonalEffects() {
         const frostOverlay = document.getElementById('frost-overlay');
         if (frostOverlay) {
@@ -552,6 +553,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Add cracking interaction
                 document.addEventListener('click', (e) => {
+                    if (!canCreateCrack) return;
+
+                    canCreateCrack = false;
+                    setTimeout(() => { canCreateCrack = true; }, 100); // 100ms throttle
+
                     createCrack(e.clientX, e.clientY);
                 });
             }
@@ -598,11 +604,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const my = 50 + Math.sin(midRad) * midLen;
 
             path.setAttribute("d", `M50,50 L${mx},${my} L${ex},${ey}`);
-            path.setAttribute("stroke", "rgba(255, 255, 255, 0.9)");
-            path.setAttribute("stroke-width", "1.5");
-            path.setAttribute("fill", "none");
-            path.setAttribute("stroke-linecap", "round");
-            path.setAttribute("stroke-linejoin", "round");
 
             svg.appendChild(path);
         }
@@ -612,7 +613,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Limit number of cracks to prevent performance issues
         if (frostOverlay.children.length > MAX_ICE_CRACKS) {
-            frostOverlay.removeChild(frostOverlay.children[0]);
+            const oldestCrack = frostOverlay.querySelector('.ice-crack');
+            if (oldestCrack) {
+                frostOverlay.removeChild(oldestCrack);
+            }
         }
     }
 
