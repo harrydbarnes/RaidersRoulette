@@ -552,16 +552,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 0);
 
                 // Add cracking interaction
-                document.addEventListener('click', (e) => {
-                    if (!canCreateCrack) return;
-
-                    canCreateCrack = false;
-                    setTimeout(() => { canCreateCrack = true; }, 100); // 100ms throttle
-
-                    createCrack(e.clientX, e.clientY);
-                });
+                document.addEventListener('click', handleCrackClick);
             }
         }
+    }
+
+    function handleCrackClick(e) {
+        if (!canCreateCrack) return;
+
+        canCreateCrack = false;
+        setTimeout(() => { canCreateCrack = true; }, 100); // 100ms throttle
+
+        createCrack(e.clientX, e.clientY);
     }
 
     function createCrack(x, y) {
@@ -583,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
         svg.setAttribute("viewBox", "0 0 100 100");
 
         // Create 3-4 jagged lines from center
-        const numLines = 3 + Math.floor(Math.random() * 3);
+        const numLines = 3 + Math.floor(Math.random() * 2);
 
         for (let i = 0; i < numLines; i++) {
             const path = document.createElementNS(svgNS, "path");
