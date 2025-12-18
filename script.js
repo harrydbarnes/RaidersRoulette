@@ -48,6 +48,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const FROST_END_DAY = 12; // January 11th is the last day, so strictly less than 12
     const MAX_ICE_CRACKS = 15;
     const CRACK_THROTTLE_MS = 100;
+    const CRACK_CONFIG = {
+        NUM_LINES_MIN: 3,
+        NUM_LINES_JITTER: 2, // numLines will be MIN + random(JITTER), so 3 or 4
+        ANGLE_JITTER: 40, // degrees
+        LENGTH_MIN: 30,
+        LENGTH_JITTER: 20, // length will be MIN + random(JITTER), so 30-50
+        MIDPOINT_RATIO_MIN: 0.4,
+        MIDPOINT_RATIO_JITTER: 0.2, // midpoint will be at len * (MIN + random(JITTER)), so 40-60%
+        MIDPOINT_ANGLE_JITTER: 60, // degrees
+    };
 
     // TTS Setup
     let voices = [];
@@ -538,27 +548,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Frost Effect Logic
     let canCreateCrack = true;
+
+    function isFrostSeason() {
+        const now = new Date();
+        const month = now.getMonth();
+        const day = now.getDate();
+        return month === MONTH_DECEMBER || (month === MONTH_JANUARY && day < FROST_END_DAY);
+    }
+
     function handleSeasonalEffects() {
         const frostOverlay = document.getElementById('frost-overlay');
-        if (frostOverlay) {
-            const now = new Date();
-            const month = now.getMonth();
-            const day = now.getDate();
+        if (frostOverlay && isFrostSeason()) {
+            // Add active class after a short delay to ensure transition triggers on load
+            setTimeout(() => {
+                frostOverlay.classList.add('active');
+            }, 0);
 
-            // Active from December 1st through January 11th
-            if (month === MONTH_DECEMBER || (month === MONTH_JANUARY && day < FROST_END_DAY)) {
-                // Add active class after a short delay to ensure transition triggers on load
-                setTimeout(() => {
-                    frostOverlay.classList.add('active');
-                }, 0);
-
-                // Add cracking interaction
-                document.addEventListener('click', handleCrackClick);
-            }
+            // Add cracking interaction
+            document.addEventListener('click', handleCrackClick);
         }
     }
 
     function handleCrackClick(e) {
+        if (!isFrostSeason()) {
+            document.removeEventListener('click', handleCrackClick);
+            return;
+        }
+
         if (!canCreateCrack) return;
 
         canCreateCrack = false;
@@ -568,17 +584,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createCrack(x, y) {
-        const CRACK_CONFIG = {
-            NUM_LINES_MIN: 3,
-            NUM_LINES_JITTER: 2, // numLines will be MIN + random(JITTER), so 3 or 4
-            ANGLE_JITTER: 40, // degrees
-            LENGTH_MIN: 30,
-            LENGTH_JITTER: 20, // length will be MIN + random(JITTER), so 30-50
-            MIDPOINT_RATIO_MIN: 0.4,
-            MIDPOINT_RATIO_JITTER: 0.2, // midpoint will be at len * (MIN + random(JITTER)), so 40-60%
-            MIDPOINT_ANGLE_JITTER: 60, // degrees
-        };
-
         const frostOverlay = document.getElementById('frost-overlay');
         if (!frostOverlay) return;
 
@@ -626,8 +631,12 @@ document.addEventListener('DOMContentLoaded', () => {
         frostOverlay.appendChild(crack);
 
         // Limit number of cracks to prevent performance issues
-        if (frostOverlay.children.length > MAX_ICE_CRACKS) {
-            const oldestCrack = frostOverlay.querySelector('.ice-crack');
+        const cracks = frostOverlay.getElementsByClassName('ice-crack');
+        if (cracks.length > MAX_ICE_CRACKS) {
+            // Because getElementsByClassName returns a live collection,
+            // the oldest one should be at index 0 (if appendChild is always used)
+            // But to be safe and consistent with previous logic, we can just remove the first element of the collection
+            const oldestCrack = cracks[0];
             if (oldestCrack) {
                 frostOverlay.removeChild(oldestCrack);
             }
