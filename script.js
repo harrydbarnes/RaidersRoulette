@@ -59,6 +59,27 @@ document.addEventListener('DOMContentLoaded', () => {
         MIDPOINT_ANGLE_JITTER: 60, // degrees
     };
 
+    const SHATTER_CONFIG = {
+        NUM_SHARDS: 12,
+        SHARD_W_MIN: 20, // vw
+        SHARD_W_JITTER: 30, // + 0-30vw
+        SHARD_H_MIN: 20, // vh
+        SHARD_H_JITTER: 30, // + 0-30vh
+        CLIP_POINTS_MIN: 3,
+        CLIP_POINTS_JITTER: 3,
+        FALL_DURATION_MIN: 800,
+        FALL_DURATION_JITTER: 600,
+        ROTATION_JITTER: 60, // degrees +/-
+        TY_MIN: 100, // vh
+        TY_JITTER: 50, // + 0-50vh
+        CRACK_FALL_DURATION_MIN: 1000,
+        CRACK_FALL_DURATION_JITTER: 500,
+        CRACK_ROTATE_JITTER: 100,
+        OVERLAY_FADE_DURATION: 100 // ms
+    };
+
+    const CLICKS_TO_SHATTER = 3;
+
     // TTS Setup
     let voices = [];
     let availableTtsPhrases = [];
@@ -583,10 +604,9 @@ document.addEventListener('DOMContentLoaded', () => {
         canCreateCrack = false;
         setTimeout(() => { canCreateCrack = true; }, CRACK_THROTTLE_MS);
 
-        if (frostClickCount < 3) {
-            createCrack(e.clientX, e.clientY);
-        } else {
-            createCrack(e.clientX, e.clientY);
+        createCrack(e.clientX, e.clientY);
+
+        if (frostClickCount >= CLICKS_TO_SHATTER) {
             requestAnimationFrame(() => shatterFrost());
         }
     }
@@ -608,8 +628,8 @@ document.addEventListener('DOMContentLoaded', () => {
             crack.style.top = `${rect.top + rect.height / 2}px`;
 
             // Animate falling
-            const fallDuration = 1000 + Math.random() * 500;
-            const rotate = (Math.random() - 0.5) * 100;
+            const fallDuration = SHATTER_CONFIG.CRACK_FALL_DURATION_MIN + Math.random() * SHATTER_CONFIG.CRACK_FALL_DURATION_JITTER;
+            const rotate = (Math.random() - 0.5) * SHATTER_CONFIG.CRACK_ROTATE_JITTER;
             const ty = window.innerHeight + 200;
 
             const anim = crack.animate([
@@ -624,14 +644,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // 2. Create shards to replace the overlay
-        const numShards = 12;
-        for (let i = 0; i < numShards; i++) {
+        for (let i = 0; i < SHATTER_CONFIG.NUM_SHARDS; i++) {
             const shard = document.createElement('div');
             shard.className = 'frost-shard';
 
             // Random size (screen relative)
-            const w = 20 + Math.random() * 30; // 20-50vw
-            const h = 20 + Math.random() * 30; // 20-50vh
+            const w = SHATTER_CONFIG.SHARD_W_MIN + Math.random() * SHATTER_CONFIG.SHARD_W_JITTER; // 20-50vw
+            const h = SHATTER_CONFIG.SHARD_H_MIN + Math.random() * SHATTER_CONFIG.SHARD_H_JITTER; // 20-50vh
             shard.style.width = `${w}vw`;
             shard.style.height = `${h}vh`;
 
@@ -643,18 +662,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Random jagged clip path (3-5 points)
             const points = [];
-            const numPoints = 3 + Math.floor(Math.random() * 3);
+            const numPoints = SHATTER_CONFIG.CLIP_POINTS_MIN + Math.floor(Math.random() * SHATTER_CONFIG.CLIP_POINTS_JITTER);
             for (let j = 0; j < numPoints; j++) {
-                 points.push(`${Math.random()*100}% ${Math.random()*100}%`);
+                points.push(`${Math.random()*100}% ${Math.random()*100}%`);
             }
             shard.style.clipPath = `polygon(${points.join(', ')})`;
 
             document.body.appendChild(shard);
 
             // Animate falling
-            const duration = 800 + Math.random() * 600;
-            const rotate = (Math.random() - 0.5) * 60;
-            const ty = 100 + Math.random() * 50; // Fall down significantly
+            const duration = SHATTER_CONFIG.FALL_DURATION_MIN + Math.random() * SHATTER_CONFIG.FALL_DURATION_JITTER;
+            const rotate = (Math.random() - 0.5) * SHATTER_CONFIG.ROTATION_JITTER;
+            const ty = SHATTER_CONFIG.TY_MIN + Math.random() * SHATTER_CONFIG.TY_JITTER; // Fall down significantly
 
             const anim = shard.animate([
                 { transform: `translate(0, 0) rotate(0deg)`, opacity: 1 },
@@ -672,11 +691,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Use immediate removal or quick fade out.
         // Since we have shards, we can remove overlay immediately to prevent double layering.
         // But to avoid a "flash", we could fade it out very fast.
-        frostOverlay.style.transition = 'opacity 0.1s';
+        frostOverlay.style.transition = `opacity ${SHATTER_CONFIG.OVERLAY_FADE_DURATION / 1000}s`;
         frostOverlay.style.opacity = '0';
         setTimeout(() => {
             if (frostOverlay.parentNode) frostOverlay.parentNode.removeChild(frostOverlay);
-        }, 100);
+        }, SHATTER_CONFIG.OVERLAY_FADE_DURATION);
     }
 
     function createCrack(x, y) {
