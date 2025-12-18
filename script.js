@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         CRACK_FALL_DURATION_MIN: 1000,
         CRACK_FALL_DURATION_JITTER: 500,
         CRACK_ROTATE_JITTER: 100,
+        CRACK_FALL_OVERSHOOT: 200, // px
         OVERLAY_FADE_DURATION: 100 // ms
     };
 
@@ -581,6 +582,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleSeasonalEffects() {
         const frostOverlay = document.getElementById('frost-overlay');
         if (frostOverlay && isFrostSeason()) {
+            // Add shared style class
+            frostOverlay.classList.add('frost-layer');
+
             // Add active class after a short delay to ensure transition triggers on load
             setTimeout(() => {
                 frostOverlay.classList.add('active');
@@ -617,7 +621,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.removeEventListener('click', handleCrackClick);
 
-        // 1. Move existing cracks to body and animate them falling
+        animateFallingCracks(frostOverlay);
+        createFallingShards();
+        fadeAndRemoveOverlay(frostOverlay);
+    }
+
+    function animateFallingCracks(frostOverlay) {
         const cracks = Array.from(frostOverlay.getElementsByClassName('ice-crack'));
         cracks.forEach(crack => {
             const rect = crack.getBoundingClientRect();
@@ -630,7 +639,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Animate falling
             const fallDuration = SHATTER_CONFIG.CRACK_FALL_DURATION_MIN + Math.random() * SHATTER_CONFIG.CRACK_FALL_DURATION_JITTER;
             const rotate = (Math.random() - 0.5) * SHATTER_CONFIG.CRACK_ROTATE_JITTER;
-            const ty = window.innerHeight + 200;
+            const ty = window.innerHeight + SHATTER_CONFIG.CRACK_FALL_OVERSHOOT;
 
             const anim = crack.animate([
                 { transform: crack.style.transform, opacity: 1 },
@@ -642,11 +651,38 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             anim.onfinish = () => crack.remove();
         });
+    }
 
-        // 2. Create shards to replace the overlay
+    function generateShardPolygon(numPoints) {
+        // Generate random points in 0-100 range
+        const points = [];
+        let cx = 0, cy = 0;
+
+        for (let i = 0; i < numPoints; i++) {
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            points.push({ x, y });
+            cx += x;
+            cy += y;
+        }
+
+        // Calculate centroid
+        cx /= numPoints;
+        cy /= numPoints;
+
+        // Sort points by angle around centroid
+        points.sort((a, b) => {
+            return Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx);
+        });
+
+        return `polygon(${points.map(p => `${p.x}% ${p.y}%`).join(', ')})`;
+    }
+
+    function createFallingShards() {
         for (let i = 0; i < SHATTER_CONFIG.NUM_SHARDS; i++) {
             const shard = document.createElement('div');
-            shard.className = 'frost-shard';
+            // Add both specific shard class and shared layer class
+            shard.className = 'frost-shard frost-layer';
 
             // Random size (screen relative)
             const w = SHATTER_CONFIG.SHARD_W_MIN + Math.random() * SHATTER_CONFIG.SHARD_W_JITTER; // 20-50vw
@@ -660,13 +696,9 @@ document.addEventListener('DOMContentLoaded', () => {
             shard.style.left = `${left}vw`;
             shard.style.top = `${top}vh`;
 
-            // Random jagged clip path (3-5 points)
-            const points = [];
+            // Random convex polygon clip path
             const numPoints = SHATTER_CONFIG.CLIP_POINTS_MIN + Math.floor(Math.random() * SHATTER_CONFIG.CLIP_POINTS_JITTER);
-            for (let j = 0; j < numPoints; j++) {
-                points.push(`${Math.random()*100}% ${Math.random()*100}%`);
-            }
-            shard.style.clipPath = `polygon(${points.join(', ')})`;
+            shard.style.clipPath = generateShardPolygon(numPoints);
 
             document.body.appendChild(shard);
 
@@ -686,11 +718,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             anim.onfinish = () => shard.remove();
         }
+    }
 
-        // 3. Remove overlay
-        // Use immediate removal or quick fade out.
-        // Since we have shards, we can remove overlay immediately to prevent double layering.
-        // But to avoid a "flash", we could fade it out very fast.
+    function fadeAndRemoveOverlay(frostOverlay) {
         frostOverlay.style.transition = `opacity ${SHATTER_CONFIG.OVERLAY_FADE_DURATION / 1000}s`;
         frostOverlay.style.opacity = '0';
         setTimeout(() => {

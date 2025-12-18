@@ -335,15 +335,8 @@ p {
     --ice-crack-glow-color: rgba(200, 255, 255, 0.8);
 }
 
-.frost-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 999;
-
+/* Shared styles for frost effect layers */
+.frost-layer {
     /* Multiple layers for depth:
        1. Vignette (Deep Blue/White edges)
        2. Scratchy texture (Repeating Linear)
@@ -355,11 +348,21 @@ p {
         repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 4px),
         repeating-linear-gradient(-45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 4px);
 
-    /* Reduced inner freeze glow */
-    box-shadow: inset 0 0 100px 30px var(--frost-vignette-color);
-
     /* Matte effect: Slight blur + saturation control */
     backdrop-filter: blur(var(--frost-blur)) brightness(var(--frost-brightness)) saturate(var(--frost-saturation));
+}
+
+.frost-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 999;
+
+    /* Reduced inner freeze glow */
+    box-shadow: inset 0 0 100px 30px var(--frost-vignette-color);
 
     opacity: 0;
     transition: opacity 3s ease-out;
@@ -405,11 +408,8 @@ p {
     left: 0;
     pointer-events: none;
     z-index: 1001; /* Above overlay */
-    background:
-        radial-gradient(circle at center, rgba(100, 200, 255, 0) 40%, rgba(150, 220, 255, 0.1) 60%, rgba(180, 230, 255, 0.3) 100%),
-        repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 4px),
-        repeating-linear-gradient(-45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 4px);
-    backdrop-filter: blur(var(--frost-blur)) brightness(var(--frost-brightness)) saturate(var(--frost-saturation));
+
+    /* Smaller inner glow for shards */
     box-shadow: inset 0 0 20px 5px var(--frost-vignette-color);
     border: 1px solid rgba(255, 255, 255, 0.3);
     transform-origin: center;
