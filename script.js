@@ -572,6 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleCrackClick(e) {
         if (!isFrostSeason()) {
             document.removeEventListener('click', handleCrackClick);
+            document.getElementById('frost-overlay')?.classList.remove('active');
             return;
         }
 
