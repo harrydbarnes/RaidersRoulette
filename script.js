@@ -723,9 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function fadeAndRemoveOverlay(frostOverlay) {
         frostOverlay.style.transition = `opacity ${SHATTER_CONFIG.OVERLAY_FADE_DURATION / 1000}s`;
         frostOverlay.style.opacity = '0';
-        setTimeout(() => {
-            if (frostOverlay.parentNode) frostOverlay.parentNode.removeChild(frostOverlay);
-        }, SHATTER_CONFIG.OVERLAY_FADE_DURATION);
+        frostOverlay.addEventListener('transitionend', () => frostOverlay.remove(), { once: true });
     }
 
     function createCrack(x, y) {
