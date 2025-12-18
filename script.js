@@ -630,16 +630,12 @@ document.addEventListener('DOMContentLoaded', () => {
         crack.appendChild(svg);
         frostOverlay.appendChild(crack);
 
-        // Limit number of cracks to prevent performance issues
+        // Limit number of cracks to prevent performance issues.
         const cracks = frostOverlay.getElementsByClassName('ice-crack');
         if (cracks.length > MAX_ICE_CRACKS) {
-            // Because getElementsByClassName returns a live collection,
-            // the oldest one should be at index 0 (if appendChild is always used)
-            // But to be safe and consistent with previous logic, we can just remove the first element of the collection
-            const oldestCrack = cracks[0];
-            if (oldestCrack) {
-                frostOverlay.removeChild(oldestCrack);
-            }
+            // getElementsByClassName returns a live HTMLCollection, so the first
+            // element is the oldest one added.
+            frostOverlay.removeChild(cracks[0]);
         }
     }
 
