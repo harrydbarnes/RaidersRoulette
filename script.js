@@ -548,6 +548,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Frost Effect Logic
     let canCreateCrack = true;
+    let frostClickCount = 0;
 
     function isFrostSeason() {
         const now = new Date();
@@ -578,10 +579,104 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!canCreateCrack) return;
 
+        frostClickCount++;
         canCreateCrack = false;
         setTimeout(() => { canCreateCrack = true; }, CRACK_THROTTLE_MS);
 
-        createCrack(e.clientX, e.clientY);
+        if (frostClickCount < 3) {
+            createCrack(e.clientX, e.clientY);
+        } else {
+            createCrack(e.clientX, e.clientY);
+            requestAnimationFrame(() => shatterFrost());
+        }
+    }
+
+    function shatterFrost() {
+        const frostOverlay = document.getElementById('frost-overlay');
+        if (!frostOverlay) return;
+
+        document.removeEventListener('click', handleCrackClick);
+
+        // 1. Move existing cracks to body and animate them falling
+        const cracks = Array.from(frostOverlay.getElementsByClassName('ice-crack'));
+        cracks.forEach(crack => {
+            const rect = crack.getBoundingClientRect();
+            // Move to body, preserving visual position
+            document.body.appendChild(crack);
+            crack.style.position = 'fixed'; // It was absolute in overlay
+            crack.style.left = `${rect.left + rect.width / 2}px`;
+            crack.style.top = `${rect.top + rect.height / 2}px`;
+
+            // Animate falling
+            const fallDuration = 1000 + Math.random() * 500;
+            const rotate = (Math.random() - 0.5) * 100;
+            const ty = window.innerHeight + 200;
+
+            const anim = crack.animate([
+                { transform: crack.style.transform, opacity: 1 },
+                { transform: `translate(-50%, ${ty}px) rotate(${rotate}deg)`, opacity: 0 }
+            ], {
+                duration: fallDuration,
+                easing: 'ease-in',
+                fill: 'forwards'
+            });
+            anim.onfinish = () => crack.remove();
+        });
+
+        // 2. Create shards to replace the overlay
+        const numShards = 12;
+        for (let i = 0; i < numShards; i++) {
+            const shard = document.createElement('div');
+            shard.className = 'frost-shard';
+
+            // Random size (screen relative)
+            const w = 20 + Math.random() * 30; // 20-50vw
+            const h = 20 + Math.random() * 30; // 20-50vh
+            shard.style.width = `${w}vw`;
+            shard.style.height = `${h}vh`;
+
+            // Random position
+            const left = Math.random() * 100 - w/2;
+            const top = Math.random() * 100 - h/2;
+            shard.style.left = `${left}vw`;
+            shard.style.top = `${top}vh`;
+
+            // Random jagged clip path (3-5 points)
+            const points = [];
+            const numPoints = 3 + Math.floor(Math.random() * 3);
+            for (let j = 0; j < numPoints; j++) {
+                 points.push(`${Math.random()*100}% ${Math.random()*100}%`);
+            }
+            shard.style.clipPath = `polygon(${points.join(', ')})`;
+
+            document.body.appendChild(shard);
+
+            // Animate falling
+            const duration = 800 + Math.random() * 600;
+            const rotate = (Math.random() - 0.5) * 60;
+            const ty = 100 + Math.random() * 50; // Fall down significantly
+
+            const anim = shard.animate([
+                { transform: `translate(0, 0) rotate(0deg)`, opacity: 1 },
+                { transform: `translate(0, ${ty}vh) rotate(${rotate}deg)`, opacity: 0 }
+            ], {
+                duration: duration,
+                easing: 'ease-in',
+                fill: 'forwards'
+            });
+
+            anim.onfinish = () => shard.remove();
+        }
+
+        // 3. Remove overlay
+        // Use immediate removal or quick fade out.
+        // Since we have shards, we can remove overlay immediately to prevent double layering.
+        // But to avoid a "flash", we could fade it out very fast.
+        frostOverlay.style.transition = 'opacity 0.1s';
+        frostOverlay.style.opacity = '0';
+        setTimeout(() => {
+            if (frostOverlay.parentNode) frostOverlay.parentNode.removeChild(frostOverlay);
+        }, 100);
     }
 
     function createCrack(x, y) {
