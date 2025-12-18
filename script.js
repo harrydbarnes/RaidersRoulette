@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const MONTH_JANUARY = 0;
     const FROST_END_DAY = 12; // January 11th is the last day, so strictly less than 12
     const MAX_ICE_CRACKS = 15;
+    const CRACK_THROTTLE_MS = 100;
 
     // TTS Setup
     let voices = [];
@@ -561,12 +562,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!canCreateCrack) return;
 
         canCreateCrack = false;
-        setTimeout(() => { canCreateCrack = true; }, 100); // 100ms throttle
+        setTimeout(() => { canCreateCrack = true; }, CRACK_THROTTLE_MS);
 
         createCrack(e.clientX, e.clientY);
     }
 
     function createCrack(x, y) {
+        const CRACK_CONFIG = {
+            NUM_LINES_MIN: 3,
+            NUM_LINES_JITTER: 2, // numLines will be MIN + random(JITTER), so 3 or 4
+            ANGLE_JITTER: 40, // degrees
+            LENGTH_MIN: 30,
+            LENGTH_JITTER: 20, // length will be MIN + random(JITTER), so 30-50
+            MIDPOINT_RATIO_MIN: 0.4,
+            MIDPOINT_RATIO_JITTER: 0.2, // midpoint will be at len * (MIN + random(JITTER)), so 40-60%
+            MIDPOINT_ANGLE_JITTER: 60, // degrees
+        };
+
         const frostOverlay = document.getElementById('frost-overlay');
         if (!frostOverlay) return;
 
@@ -584,23 +596,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const svg = document.createElementNS(svgNS, "svg");
         svg.setAttribute("viewBox", "0 0 100 100");
 
-        // Create 3-4 jagged lines from center
-        const numLines = 3 + Math.floor(Math.random() * 2);
+        // Create jagged lines from center
+        const numLines = CRACK_CONFIG.NUM_LINES_MIN + Math.floor(Math.random() * CRACK_CONFIG.NUM_LINES_JITTER);
 
         for (let i = 0; i < numLines; i++) {
             const path = document.createElementNS(svgNS, "path");
             // Generate a jagged path from 50,50 to edge
-            const angle = (i * (360 / numLines)) + (Math.random() * 40 - 20);
+            const angle = (i * (360 / numLines)) + (Math.random() * CRACK_CONFIG.ANGLE_JITTER - (CRACK_CONFIG.ANGLE_JITTER / 2));
             const rad = angle * Math.PI / 180;
-            const len = 30 + Math.random() * 20; // length 30-50
+            const len = CRACK_CONFIG.LENGTH_MIN + Math.random() * CRACK_CONFIG.LENGTH_JITTER;
 
             // End point
             const ex = 50 + Math.cos(rad) * len;
             const ey = 50 + Math.sin(rad) * len;
 
             // Mid point for jag
-            const midLen = len * (0.4 + Math.random() * 0.2);
-            const midAngle = angle + (Math.random() * 60 - 30); // deviate
+            const midLen = len * (CRACK_CONFIG.MIDPOINT_RATIO_MIN + Math.random() * CRACK_CONFIG.MIDPOINT_RATIO_JITTER);
+            const midAngle = angle + (Math.random() * CRACK_CONFIG.MIDPOINT_ANGLE_JITTER - (CRACK_CONFIG.MIDPOINT_ANGLE_JITTER / 2));
             const midRad = midAngle * Math.PI / 180;
             const mx = 50 + Math.cos(midRad) * midLen;
             const my = 50 + Math.sin(midRad) * midLen;

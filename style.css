@@ -379,7 +379,6 @@ p {
     position: absolute;
     width: 150px;
     height: 150px;
-    transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 1000;
     overflow: visible;
