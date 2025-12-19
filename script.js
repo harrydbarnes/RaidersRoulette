@@ -59,6 +59,28 @@ document.addEventListener('DOMContentLoaded', () => {
         MIDPOINT_ANGLE_JITTER: 60, // degrees
     };
 
+    const SHATTER_CONFIG = {
+        NUM_SHARDS: 12,
+        SHARD_W_MIN: 20, // vw
+        SHARD_W_JITTER: 30, // + 0-30vw
+        SHARD_H_MIN: 20, // vh
+        SHARD_H_JITTER: 30, // + 0-30vh
+        CLIP_POINTS_MIN: 3,
+        CLIP_POINTS_JITTER: 3,
+        FALL_DURATION_MIN: 800,
+        FALL_DURATION_JITTER: 600,
+        ROTATION_JITTER: 60, // degrees +/-
+        TY_MIN: 100, // vh
+        TY_JITTER: 50, // + 0-50vh
+        CRACK_FALL_DURATION_MIN: 1000,
+        CRACK_FALL_DURATION_JITTER: 500,
+        CRACK_ROTATE_JITTER: 100,
+        CRACK_FALL_OVERSHOOT: 200, // px
+        OVERLAY_FADE_DURATION: 100 // ms
+    };
+
+    const CLICKS_TO_SHATTER = 3;
+
     // TTS Setup
     let voices = [];
     let availableTtsPhrases = [];
@@ -548,6 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Frost Effect Logic
     let canCreateCrack = true;
+    let frostClickCount = 0;
 
     function isFrostSeason() {
         const now = new Date();
@@ -559,6 +582,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleSeasonalEffects() {
         const frostOverlay = document.getElementById('frost-overlay');
         if (frostOverlay && isFrostSeason()) {
+            // Add shared style class
+            frostOverlay.classList.add('frost-layer');
+
             // Add active class after a short delay to ensure transition triggers on load
             setTimeout(() => {
                 frostOverlay.classList.add('active');
@@ -578,10 +604,134 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!canCreateCrack) return;
 
+        frostClickCount++;
         canCreateCrack = false;
         setTimeout(() => { canCreateCrack = true; }, CRACK_THROTTLE_MS);
 
         createCrack(e.clientX, e.clientY);
+
+        if (frostClickCount >= CLICKS_TO_SHATTER) {
+            requestAnimationFrame(() => shatterFrost());
+        }
+    }
+
+    function shatterFrost() {
+        const frostOverlay = document.getElementById('frost-overlay');
+        if (!frostOverlay) return;
+
+        document.removeEventListener('click', handleCrackClick);
+
+        animateFallingCracks(frostOverlay);
+        createFallingShards();
+        fadeAndRemoveOverlay(frostOverlay);
+    }
+
+    function animateFallingCracks(frostOverlay) {
+        const cracks = Array.from(frostOverlay.getElementsByClassName('ice-crack'));
+
+        // 1. Batch DOM reads
+        const crackData = cracks.map(crack => ({
+            element: crack,
+            rect: crack.getBoundingClientRect(),
+            initialTransform: crack.style.transform
+        }));
+
+        // 2. Batch DOM writes
+        crackData.forEach(({ element: crack, rect, initialTransform }) => {
+            document.body.appendChild(crack);
+            crack.style.position = 'fixed';
+            crack.style.left = `${rect.left + rect.width / 2}px`;
+            crack.style.top = `${rect.top + rect.height / 2}px`;
+
+            const fallDuration = SHATTER_CONFIG.CRACK_FALL_DURATION_MIN + Math.random() * SHATTER_CONFIG.CRACK_FALL_DURATION_JITTER;
+            const rotate = (Math.random() - 0.5) * SHATTER_CONFIG.CRACK_ROTATE_JITTER;
+            const ty = window.innerHeight + SHATTER_CONFIG.CRACK_FALL_OVERSHOOT;
+
+            const anim = crack.animate([
+                { transform: initialTransform, opacity: 1 },
+                { transform: `translate(-50%, ${ty}px) rotate(${rotate}deg)`, opacity: 0 }
+            ], {
+                duration: fallDuration,
+                easing: 'ease-in',
+                fill: 'forwards'
+            });
+            anim.onfinish = () => crack.remove();
+        });
+    }
+
+    function generateShardPolygon(numPoints) {
+        // Generate random points in 0-100 range
+        const points = [];
+        let cx = 0, cy = 0;
+
+        for (let i = 0; i < numPoints; i++) {
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            points.push({ x, y });
+            cx += x;
+            cy += y;
+        }
+
+        // Calculate centroid
+        cx /= numPoints;
+        cy /= numPoints;
+
+        // Sort points by angle around centroid
+        points.sort((a, b) => {
+            return Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx);
+        });
+
+        return `polygon(${points.map(p => `${p.x}% ${p.y}%`).join(', ')})`;
+    }
+
+    function createFallingShards() {
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < SHATTER_CONFIG.NUM_SHARDS; i++) {
+            const shard = document.createElement('div');
+            // Add both specific shard class and shared layer class
+            shard.className = 'frost-shard frost-layer';
+
+            // Random size (screen relative)
+            const w = SHATTER_CONFIG.SHARD_W_MIN + Math.random() * SHATTER_CONFIG.SHARD_W_JITTER; // 20-50vw
+            const h = SHATTER_CONFIG.SHARD_H_MIN + Math.random() * SHATTER_CONFIG.SHARD_H_JITTER; // 20-50vh
+            shard.style.width = `${w}vw`;
+            shard.style.height = `${h}vh`;
+
+            // Random position
+            const left = Math.random() * 100 - w/2;
+            const top = Math.random() * 100 - h/2;
+            shard.style.left = `${left}vw`;
+            shard.style.top = `${top}vh`;
+
+            // Random convex polygon clip path
+            const numPoints = SHATTER_CONFIG.CLIP_POINTS_MIN + Math.floor(Math.random() * SHATTER_CONFIG.CLIP_POINTS_JITTER);
+            shard.style.clipPath = generateShardPolygon(numPoints);
+
+            fragment.appendChild(shard);
+
+            // Animate falling
+            const duration = SHATTER_CONFIG.FALL_DURATION_MIN + Math.random() * SHATTER_CONFIG.FALL_DURATION_JITTER;
+            const rotate = (Math.random() - 0.5) * SHATTER_CONFIG.ROTATION_JITTER;
+            const ty = SHATTER_CONFIG.TY_MIN + Math.random() * SHATTER_CONFIG.TY_JITTER; // Fall down significantly
+
+            const anim = shard.animate([
+                { transform: `translate(0, 0) rotate(0deg)`, opacity: 1 },
+                { transform: `translate(0, ${ty}vh) rotate(${rotate}deg)`, opacity: 0 }
+            ], {
+                duration: duration,
+                easing: 'ease-in',
+                fill: 'forwards'
+            });
+
+            anim.onfinish = () => shard.remove();
+        }
+        document.body.appendChild(fragment);
+    }
+
+    function fadeAndRemoveOverlay(frostOverlay) {
+        frostOverlay.classList.add('is-shattering');
+        frostOverlay.style.opacity = '0';
+        frostOverlay.addEventListener('transitionend', () => frostOverlay.remove(), { once: true });
     }
 
     function createCrack(x, y) {
