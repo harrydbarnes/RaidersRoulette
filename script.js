@@ -628,21 +628,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function animateFallingCracks(frostOverlay) {
         const cracks = Array.from(frostOverlay.getElementsByClassName('ice-crack'));
-        cracks.forEach(crack => {
-            const rect = crack.getBoundingClientRect();
-            // Move to body, preserving visual position
+
+        // 1. Batch DOM reads
+        const crackData = cracks.map(crack => ({
+            element: crack,
+            rect: crack.getBoundingClientRect(),
+            initialTransform: crack.style.transform
+        }));
+
+        // 2. Batch DOM writes
+        crackData.forEach(({ element: crack, rect, initialTransform }) => {
             document.body.appendChild(crack);
-            crack.style.position = 'fixed'; // It was absolute in overlay
+            crack.style.position = 'fixed';
             crack.style.left = `${rect.left + rect.width / 2}px`;
             crack.style.top = `${rect.top + rect.height / 2}px`;
 
-            // Animate falling
             const fallDuration = SHATTER_CONFIG.CRACK_FALL_DURATION_MIN + Math.random() * SHATTER_CONFIG.CRACK_FALL_DURATION_JITTER;
             const rotate = (Math.random() - 0.5) * SHATTER_CONFIG.CRACK_ROTATE_JITTER;
             const ty = window.innerHeight + SHATTER_CONFIG.CRACK_FALL_OVERSHOOT;
 
             const anim = crack.animate([
-                { transform: crack.style.transform, opacity: 1 },
+                { transform: initialTransform, opacity: 1 },
                 { transform: `translate(-50%, ${ty}px) rotate(${rotate}deg)`, opacity: 0 }
             ], {
                 duration: fallDuration,
@@ -679,6 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createFallingShards() {
+        const fragment = document.createDocumentFragment();
         for (let i = 0; i < SHATTER_CONFIG.NUM_SHARDS; i++) {
             const shard = document.createElement('div');
             // Add both specific shard class and shared layer class
@@ -700,7 +707,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const numPoints = SHATTER_CONFIG.CLIP_POINTS_MIN + Math.floor(Math.random() * SHATTER_CONFIG.CLIP_POINTS_JITTER);
             shard.style.clipPath = generateShardPolygon(numPoints);
 
-            document.body.appendChild(shard);
+            fragment.appendChild(shard);
 
             // Animate falling
             const duration = SHATTER_CONFIG.FALL_DURATION_MIN + Math.random() * SHATTER_CONFIG.FALL_DURATION_JITTER;
@@ -718,6 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             anim.onfinish = () => shard.remove();
         }
+        document.body.appendChild(fragment);
     }
 
     function fadeAndRemoveOverlay(frostOverlay) {
