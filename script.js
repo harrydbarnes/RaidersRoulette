@@ -729,7 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function fadeAndRemoveOverlay(frostOverlay) {
-        frostOverlay.style.transition = `opacity ${SHATTER_CONFIG.OVERLAY_FADE_DURATION / 1000}s`;
+        frostOverlay.classList.add('is-shattering');
         frostOverlay.style.opacity = '0';
         frostOverlay.addEventListener('transitionend', () => frostOverlay.remove(), { once: true });
     }
