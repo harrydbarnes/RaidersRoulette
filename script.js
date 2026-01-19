@@ -566,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const isTracked = this.trackedTrophies.has(trophy.name);
                 li.className = `trophy-item ${(trophy.rarity || '').toLowerCase()}${isTracked ? ' tracked' : ''}`;
-                li.checkboxElement.checked = isTracked;
+                li.querySelector('.trophy-checkbox').checked = isTracked;
 
                 this.trophyList.appendChild(li);
             });
