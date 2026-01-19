@@ -526,6 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             infoDiv.append(nameSpan, descSpan, raritySpan);
             li.append(checkbox, infoDiv);
+            li.checkboxElement = checkbox; // Cache for quick access
 
             return li;
         }
@@ -534,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (this.trophies.length === 0) return;
 
             // Clear loading/error states if present
-            if (this.trophyList.querySelector('.loading') || this.trophyList.querySelector('.error')) {
+            if (this.trophyList.querySelector('.loading, .error')) {
                 this.trophyList.textContent = '';
             }
 
@@ -565,10 +566,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const isTracked = this.trackedTrophies.has(trophy.name);
                 li.className = `trophy-item ${(trophy.rarity || '').toLowerCase()}${isTracked ? ' tracked' : ''}`;
-                li.querySelector('.trophy-checkbox').checked = isTracked;
+                li.checkboxElement.checked = isTracked;
 
                 this.trophyList.appendChild(li);
             });
+
+            // Clean up stale DOM elements and cache entries. This makes the rendering
+            // robust against cases where the master `this.trophies` list might change.
+            const activeTrophyNames = new Set(this.trophies.map(t => t.name));
+            for (const li of Array.from(this.trophyList.children)) {
+                // We can use the checkbox dataset we set earlier
+                const trophyName = li.checkboxElement?.dataset.name;
+                if (trophyName && !activeTrophyNames.has(trophyName)) {
+                    li.remove();
+                    this.trophyCache.delete(trophyName);
+                }
+            }
         }
 
         toggleTrackTrophy(name) {
