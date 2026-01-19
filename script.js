@@ -574,10 +574,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Clean up stale DOM elements and cache entries. This makes the rendering
             // robust against cases where the master `this.trophies` list might change.
             const activeTrophyNames = new Set(this.trophies.map(t => t.name));
-            for (const li of Array.from(this.trophyList.children)) {
-                // We can use the checkbox dataset we set earlier
-                const trophyName = li.checkboxElement?.dataset.name;
-                if (trophyName && !activeTrophyNames.has(trophyName)) {
+            for (const [trophyName, li] of this.trophyCache.entries()) {
+                if (!activeTrophyNames.has(trophyName)) {
                     li.remove();
                     this.trophyCache.delete(trophyName);
                 }
