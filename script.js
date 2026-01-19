@@ -351,6 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.validateElements();
 
             this.trophies = [];
+            this.trophyCache = new Map();
             this.trackedTrophies = new Set();
             this.trophySortMethod = 'name';
             this.rarityOrder = { 'Platinum': 0, 'Gold': 1, 'Silver': 2, 'Bronze': 3 };
@@ -500,8 +501,43 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        createTrophyElement(trophy) {
+            const li = document.createElement('li');
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'trophy-checkbox';
+            checkbox.dataset.name = trophy.name;
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'trophy-info';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'trophy-name';
+            nameSpan.textContent = trophy.name;
+
+            const descSpan = document.createElement('span');
+            descSpan.className = 'trophy-desc';
+            descSpan.textContent = trophy.description;
+
+            const raritySpan = document.createElement('span');
+            raritySpan.className = 'trophy-rarity';
+            raritySpan.textContent = trophy.rarity;
+
+            infoDiv.append(nameSpan, descSpan, raritySpan);
+            li.append(checkbox, infoDiv);
+            li.checkboxElement = checkbox; // Cache for quick access
+
+            return li;
+        }
+
         renderTrophies() {
             if (this.trophies.length === 0) return;
+
+            // Clear loading/error states if present
+            if (this.trophyList.querySelector('.loading, .error')) {
+                this.trophyList.textContent = '';
+            }
 
             const sortedTrophies = [...this.trophies].sort((a, b) => {
                 const trackedSort = this.trackedTrophies.has(b.name) - this.trackedTrophies.has(a.name);
@@ -517,39 +553,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 return a.name.localeCompare(b.name);
             });
 
-            const trophyElements = sortedTrophies.map(trophy => {
-                const li = document.createElement('li');
+            // Optimization: Reuse existing DOM elements (DOM pooling) to prevent
+            // layout thrashing and garbage collection overhead.
+            // Using appendChild moves the existing node to the new position,
+            // effectively sorting the list while preserving focus state.
+            sortedTrophies.forEach(trophy => {
+                let li = this.trophyCache.get(trophy.name);
+                if (!li) {
+                    li = this.createTrophyElement(trophy);
+                    this.trophyCache.set(trophy.name, li);
+                }
+
                 const isTracked = this.trackedTrophies.has(trophy.name);
-
                 li.className = `trophy-item ${(trophy.rarity || '').toLowerCase()}${isTracked ? ' tracked' : ''}`;
+                li.querySelector('.trophy-checkbox').checked = isTracked;
 
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.className = 'trophy-checkbox';
-                checkbox.dataset.name = trophy.name;
-                checkbox.checked = isTracked;
-
-                const infoDiv = document.createElement('div');
-                infoDiv.className = 'trophy-info';
-
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'trophy-name';
-                nameSpan.textContent = trophy.name;
-
-                const descSpan = document.createElement('span');
-                descSpan.className = 'trophy-desc';
-                descSpan.textContent = trophy.description;
-
-                const raritySpan = document.createElement('span');
-                raritySpan.className = 'trophy-rarity';
-                raritySpan.textContent = trophy.rarity;
-
-                infoDiv.append(nameSpan, descSpan, raritySpan);
-                li.append(checkbox, infoDiv);
-                return li;
+                this.trophyList.appendChild(li);
             });
 
-            this.trophyList.replaceChildren(...trophyElements);
+            // Clean up stale DOM elements and cache entries. This makes the rendering
+            // robust against cases where the master `this.trophies` list might change.
+            const activeTrophyNames = new Set(this.trophies.map(t => t.name));
+            for (const [trophyName, li] of this.trophyCache.entries()) {
+                if (!activeTrophyNames.has(trophyName)) {
+                    li.remove();
+                    this.trophyCache.delete(trophyName);
+                }
+            }
         }
 
         toggleTrackTrophy(name) {
